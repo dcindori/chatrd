@@ -96,65 +96,21 @@ body {
 
 
 /* ========================================== */
-/*  3-COLUMN GRID LAYOUT                      */
-/*  [info right-aligned] [dot] [message]      */
+/*  2-COLUMN GRID LAYOUT                      */
+/*  [info + dot] [message]                    */
 /* ========================================== */
 
 #chat:not(.horizontal):not(.oneline) .item .message {
     display: grid !important;
-    grid-template-columns: var(--chatrd-info-width) auto 1fr;
+    grid-template-columns: var(--chatrd-info-width) 1fr;
     align-items: center;
     column-gap: 7px;
 }
 
-/* Platform dot = separator (column 2) */
+/* Kill the ::before — dot is now ::after on .info */
 #chat:not(.horizontal):not(.oneline) .item .message::before {
-    /* What it is */
-    content: '' !important;
-    display: flex !important;
-    width: 6px !important;
-    height: 6px !important;
-    min-width: 6px !important;
-    max-width: 6px !important;
-    min-height: 6px !important;
-    max-height: 6px !important;
-    border-radius: 50% !important;
-    background: rgba(255,255,255,0.15);
-    /* Grid placement + centering */
-    grid-column: 2;
-    align-self: center !important;
-    justify-self: center !important;
-    /* Kill everything inherited */
-    position: static !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-    color: transparent !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-    font-weight: normal !important;
-    top: auto !important;
-    right: auto !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    text-shadow: none !important;
-    transform: none !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-}
-
-#chat:not(.horizontal):not(.oneline) .item.twitch .message::before {
-    background: var(--platform-twitch) !important;
-}
-#chat:not(.horizontal):not(.oneline) .item.youtube .message::before {
-    background: var(--platform-youtube) !important;
-}
-#chat:not(.horizontal):not(.oneline) .item.tiktok .message::before {
-    background: var(--platform-tiktok) !important;
-}
-#chat:not(.horizontal):not(.oneline) .item.kick .message::before {
-    background: var(--platform-kick) !important;
+    content: none !important;
+    display: none !important;
 }
 
 /* Full-width special elements */
@@ -166,7 +122,7 @@ body {
     margin-bottom: 2px;
 }
 
-/* Info section: column 1, right-aligned, aligned with first text line */
+/* Info section: column 1, right-aligned */
 #chat:not(.horizontal):not(.oneline) .item .info {
     grid-column: 1;
     display: flex !important;
@@ -174,9 +130,27 @@ body {
     align-items: center !important;
     gap: 4px !important;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible !important;
     flex-wrap: nowrap !important;
 }
+
+/* Dot separator — flex item inside .info, naturally centered with avatar+username */
+#chat:not(.horizontal):not(.oneline) .item .info::after {
+    content: '' !important;
+    width: 6px;
+    height: 6px;
+    min-width: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+    order: 99;
+}
+
+/* Platform-colored dots */
+#chat:not(.horizontal):not(.oneline) .item.twitch  .info::after { background: var(--platform-twitch); }
+#chat:not(.horizontal):not(.oneline) .item.youtube .info::after { background: var(--platform-youtube); }
+#chat:not(.horizontal):not(.oneline) .item.tiktok  .info::after { background: var(--platform-tiktok); }
+#chat:not(.horizontal):not(.oneline) .item.kick    .info::after { background: var(--platform-kick); }
 
 /* Element order: platform > avatar > badges > pronouns > username */
 #chat:not(.horizontal):not(.oneline) .item .info .timestamp  { order: 0; flex-shrink: 0; }
@@ -196,7 +170,7 @@ body {
 
 /* Message text: column 3 */
 #chat:not(.horizontal):not(.oneline) .item .actual-message {
-    grid-column: 3;
+    grid-column: 2;
     margin-top: 0 !important;
     min-width: 0;
     word-break: break-word;
@@ -219,7 +193,7 @@ body {
     visibility: hidden;
 }
 #chat:not(.horizontal):not(.oneline) .item.chat.grouped .message .actual-message {
-    grid-column: 3;
+    grid-column: 2;
 }
 
 
@@ -442,6 +416,7 @@ body {
     outline-offset: 0 !important;
     border-radius: var(--chatrd-bubble-radius) !important;
     padding: 6px 10px !important;
+    min-height: 32px !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     line-height: 1.5 !important;
