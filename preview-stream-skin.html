@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatRD Stream Skin Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Asap+Condensed:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
+    <link rel="stylesheet" href="css/chatrd.css">
+    <link rel="stylesheet" href="css/skin-stream.css">
+    <style>
+        body {
+            font-family: "Asap Condensed", system-ui, sans-serif;
+            margin: 0; height: 100vh; overflow: hidden;
+            background: linear-gradient(135deg, #0a0a12 0%, #12122a 35%, #0d1a2a 65%, #1e1040 100%);
+            background-size: 400% 400%; animation: bg 25s ease infinite;
+        }
+        @keyframes bg { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        #container{height:100%;display:flex;flex-direction:column}
+        #container .wrapper{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        #chat{flex:1;display:flex;flex-direction:column-reverse;overflow-y:auto;padding:0 10px}
+
+        #chat .item{position:relative;color:#FFF;font-size:18px;line-height:150%;text-shadow:2px 2px 5px rgba(0,0,0,0.75);transition:all ease-in-out 300ms}
+        #chat .item .message{border-radius:5px;padding:5px;transition:all ease-in-out 300ms}
+        #chat .item .info{display:inline-flex;align-items:center;flex-wrap:wrap;gap:5px}
+        #chat .item img{height:22px;filter:drop-shadow(2px 2px 5px rgba(0,0,0,0.25))}
+        #chat .item .platform,#chat .item .badges{height:22px}
+        #chat .item .platform .hidden-platform{display:inline-block;width:12px;height:12px;border-radius:100px;background:#FFF}
+        #chat .item .info .avatar{display:block;width:32px;height:32px;overflow:hidden;border-radius:100px}
+        #chat .item .info .avatar img{height:32px}
+        #chat .item .timestamp,#chat .item .pronouns{display:inline-block;background:rgba(0,0,0,0.40);padding:0 6px;font-size:12px;border-radius:5px;font-weight:bold}
+        #chat .item .first-message{font-size:14px}
+        #chat .user{font-weight:bold}
+        #chat .item .actual-message{font-weight:300}
+        #chat .item .actual-message img{vertical-align:middle;height:28px;margin:1px}
+
+        #chat .event{position:relative;color:#FFF;font-size:18px;line-height:100%;text-shadow:2px 2px 5px rgba(0,0,0,0.5);transition:all ease-in-out 300ms;margin:5px 10px}
+        #chat .event .message{display:inline-block;background:rgba(255,255,255,0.2);outline:1px solid rgba(255,255,255,0.1);padding:10px 20px 10px 15px;border-radius:5px;line-height:125%}
+        #chat .event img{vertical-align:middle;height:22px;margin:1px;filter:drop-shadow(2px 2px 5px rgba(0,0,0,0.25))}
+        #chat .event .platform{height:22px}
+        #chat .event .info{display:inline-flex;align-items:center;flex-wrap:wrap;gap:0 5px}
+        #chat .event .actual-message{line-height:150%;font-weight:300}
+
+        .item.chat.streamer-mentioned .message,.item.chat.streamer-mentioned .message .info,.item.chat.streamer-mentioned .message .actual-message{position:relative;z-index:11}
+        .item.chat.streamer-mentioned .message::before{content:'mentioned you';display:block;position:absolute;top:-5px;right:5px;color:#FF0000;font-size:10px;font-weight:900;text-transform:uppercase;text-shadow:none!important}
+        .item.chat.streamer-mentioned .message::after{content:'';display:block;position:absolute;width:100%;height:100%;top:50%;left:50%;transform:translate(-50%,-53.5%);background:rgba(255,0,0,0.1);border:2px solid rgba(255,0,0,0.1);border-radius:5px}
+
+        .ctrl{position:fixed;top:10px;right:10px;z-index:100;display:flex;flex-direction:column;gap:5px;font-family:"Asap Condensed",sans-serif}
+        .ctrl label,.ctrl button{display:flex;align-items:center;gap:7px;color:#fff;font-size:11px;font-weight:500;background:rgba(8,8,14,0.7);backdrop-filter:blur(12px);padding:6px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);cursor:pointer}
+        .ctrl button{justify-content:center}
+        .ctrl button:hover{background:rgba(255,255,255,0.08)}
+        .ctrl input[type=range]{width:90px;accent-color:#9146ff}
+        .ctrl span{font-variant-numeric:tabular-nums;min-width:34px;text-align:right;color:rgba(255,255,255,0.4);font-size:10px}
+    </style>
+</head>
+<body>
+    <div class="ctrl">
+        <label>Opacity <input type="range" id="sl-o" min="0" max="100" value="55"><span id="vo">0.55</span></label>
+        <label>Info W <input type="range" id="sl-w" min="100" max="300" value="160"><span id="vw">160px</span></label>
+        <button onclick="addMsg()">+ Chat</button>
+        <button onclick="addMention()">+ @Mention</button>
+        <button onclick="addEvt()">+ Event</button>
+    </div>
+
+    <div id="container"><div class="wrapper"><div id="chat"></div></div></div>
+
+<script>
+const chat=document.getElementById('chat'), R=document.documentElement.style;
+document.getElementById('sl-o').addEventListener('input',e=>{const v=(e.target.value/100).toFixed(2);R.setProperty('--chatrd-bg-opacity',v);R.setProperty('--chatrd-mention-bg-opacity',Math.min(+v+.12,1).toFixed(2));document.getElementById('vo').textContent=v});
+document.getElementById('sl-w').addEventListener('input',e=>{R.setProperty('--chatrd-info-width',e.target.value+'px');document.getElementById('vw').textContent=e.target.value+'px'});
+
+const P=['twitch','youtube','tiktok','kick'];
+const U=['NightOwl','PixelDream','StreamKing','CozyVibes','DarkLord','LunaStar','ChillGuy','RetroWave','Sakura','ThunderByte','GlitchWiz','WavyDays','xMoonlit','ZeroDay','FrostByte','NeonPulse'];
+const M=['Hey everyone!','GG that was insane','LMAO no way','Can you play that song again?','First time here love the stream','Let\'s gooo','This game is so good','How long have you been streaming?','What a play!','Hello from Germany!','The vibes are immaculate tonight','W stream as always','That combo was sick','I\'ve been watching for 3 hours','This overlay is clean wow','bruh moment','clipped and shipped','this chat is moving fast','gg wp no re','does anyone know the song?'];
+const C=['#a970ff','#ff4444','#ff3070','#48d415','#3498db','#e74c3c','#f39c12','#1abc9c','#e91e63','#9b59b6','#2ecc71','#ff6b6b','#ffd93d','#6bcb77'];
+const r=a=>a[Math.floor(Math.random()*a.length)];
+let n=0;
+
+function svg(c){const L=String.fromCharCode(65+Math.floor(Math.random()*26));return`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="${c}" rx="24"/><text x="24" y="32" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="Space Grotesk,sans-serif">${L}</text></svg>`)}`}
+
+function anim(el){el.style.opacity='0';el.style.transform='translateY(6px)';requestAnimationFrame(()=>{el.style.transition='opacity 200ms ease,transform 200ms ease';el.style.opacity='1';el.style.transform='translateY(0)'})}
+
+function addMsg(){
+    const p=r(P),u=r(U),m=r(M),c=r(C),i='m'+(n++);
+    chat.insertAdjacentHTML('afterbegin',`
+        <div id="${i}" data-user="${u}" class="item chat ${p}">
+            <div class="message">
+                <div class="info">
+                    <span class="avatar"><img src="${svg(c)}"></span>
+                    <span class="user" style="color:${c}">${u}</span>
+                </div>
+                <div class="actual-message">${m}</div>
+            </div>
+        </div>`);
+    anim(document.getElementById(i));
+}
+
+function addMention(){
+    const p=r(P),u=r(U),c=r(C),i='m'+(n++);
+    const mm=r(['@Streamer that was amazing!','Hey @Streamer check this out','@Streamer when is the next collab?','@Streamer you\'re cracked','yo @Streamer love the new overlay']);
+    chat.insertAdjacentHTML('afterbegin',`
+        <div id="${i}" data-user="${u}" class="item chat ${p} streamer-mentioned">
+            <div class="message">
+                <div class="info">
+                    <span class="avatar"><img src="${svg(c)}"></span>
+                    <span class="user" style="color:${c}">${u}</span>
+                </div>
+                <div class="actual-message">${mm}</div>
+            </div>
+        </div>`);
+    anim(document.getElementById(i));
+}
+
+function addEvt(){
+    const evts=[
+        {p:'twitch',cl:'sub twitch',u:r(U),a:'just subscribed!',v:'Tier 1'},
+        {p:'twitch',cl:'resub twitch',u:r(U),a:'resubscribed for',v:'14 Months'},
+        {p:'twitch',cl:'gift twitch',u:r(U),a:'gifted',v:'5 Subs'},
+        {p:'twitch',cl:'bits twitch',u:r(U),a:'cheered',v:'500 Bits'},
+        {p:'twitch',cl:'bits twitch bigger-than-1000',u:r(U),a:'cheered',v:'2500 Bits'},
+        {p:'twitch',cl:'raid twitch',u:r(U),a:'raided with',v:'234 Viewers'},
+        {p:'tiktok',cl:'gift tiktok',u:r(U),a:'sent',v:'Rose x5'},
+        {p:'tiktok',cl:'gift tiktok bigger-than-1000',u:r(U),a:'sent',v:'Universe x1'},
+        {p:'youtube',cl:'sub youtube',u:r(U),a:'became a member!',v:''},
+        {p:'streamelements',cl:'streamelements',u:r(U),a:'tipped',v:'$25.00'},
+        {p:'streamlabs',cl:'streamlabs',u:r(U),a:'donated',v:'$10.00'},
+        {p:'twitch',cl:'follow twitch',u:r(U),a:'just followed!',v:''},
+    ];
+    const e=r(evts),i='m'+(n++);
+    chat.insertAdjacentHTML('afterbegin',`
+        <div id="${i}" data-user="${e.u}" class="event ${e.cl}">
+            <div class="message">
+                <div class="info">
+                    <span class="platform"><span class="hidden-platform ${e.p}"></span></span>
+                    <span class="avatar"></span>
+                    <span class="user">${e.u}</span>
+                    <span class="action">${e.a}</span>
+                    <span class="value">${e.v}</span>
+                </div>
+            </div>
+        </div>`);
+    anim(document.getElementById(i));
+}
+
+// Seed
+for(let i=0;i<3;i++)addMsg();addEvt();
+for(let i=0;i<2;i++)addMsg();addMention();
+for(let i=0;i<2;i++)addMsg();addEvt();addMsg();addMention();
+for(let i=0;i<3;i++)addMsg();addEvt();
+for(let i=0;i<2;i++)addMsg();addEvt();addMsg();
+</script>
+</body>
+</html>
