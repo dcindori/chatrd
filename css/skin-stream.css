@@ -75,7 +75,7 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: var(--chatrd-bubble-radius) !important;
-    padding: 5px 10px !important;
+    padding: 4px 10px 5px !important;
     border: 1px solid rgba(255, 255, 255, 0.03) !important;
     outline: none !important;
     transition: background 200ms ease;
@@ -104,7 +104,7 @@ body {
     display: grid !important;
     grid-template-columns: var(--chatrd-info-width) auto 1fr;
     align-items: start;
-    column-gap: 5px;
+    column-gap: 7px;
 }
 
 /* Platform dot = separator (column 2) — ALWAYS visible including mentions */
@@ -116,9 +116,6 @@ body {
     min-height: 6px !important;
     max-height: 6px !important;
     border-radius: 50% !important;
-    align-self: start;
-    justify-self: center;
-    margin-top: 7px;
     background: rgba(255,255,255,0.15);
     line-height: 0 !important;
     /* Reset any base CSS overrides */
@@ -138,8 +135,11 @@ body {
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    width: 6px !important;
     overflow: visible !important;
+    /* Position: center with first text line (21px line, 6px dot → 7.5px offset) */
+    align-self: start !important;
+    justify-self: center !important;
+    margin-top: 8px !important;
 }
 
 #chat:not(.horizontal):not(.oneline) .item.twitch .message::before {
@@ -174,8 +174,6 @@ body {
     min-width: 0;
     overflow: hidden;
     flex-wrap: nowrap !important;
-    padding-top: 1px;
-    min-height: 21px;
 }
 
 /* Element order: platform > avatar > badges > pronouns > username */
