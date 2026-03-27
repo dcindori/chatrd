@@ -364,31 +364,36 @@ body {
 /*  ::before dot is preserved via global reset   */
 /* ============================================ */
 
-.item.chat.streamer-mentioned .message {
+/* Override base margin on mentioned messages */
+#chat:not(.oneline):not(.horizontal) .item.chat.streamer-mentioned {
+    margin: 0 0 4px 0 !important;
+}
+
+#chat .item.chat.streamer-mentioned .message {
     background: rgba(var(--chatrd-bubble-color), var(--chatrd-mention-bg-opacity)) !important;
     border: 1px solid rgba(245, 158, 11, 0.06) !important;
     border-left: 3px solid var(--chatrd-mention-border) !important;
 }
 
 /* Kill the default red overlay ::after */
-.item.chat.streamer-mentioned .message::after {
+#chat .item.chat.streamer-mentioned .message::after {
     display: none !important;
 }
 
 /* Platform mention tints */
-.item.twitch.chat.streamer-mentioned .message {
+#chat .item.twitch.chat.streamer-mentioned .message {
     border-color: rgba(145,70,255,0.08) !important;
     border-left-color: var(--platform-twitch) !important;
 }
-.item.youtube.chat.streamer-mentioned .message {
+#chat .item.youtube.chat.streamer-mentioned .message {
     border-color: rgba(255,0,0,0.06) !important;
     border-left-color: var(--platform-youtube) !important;
 }
-.item.tiktok.chat.streamer-mentioned .message {
+#chat .item.tiktok.chat.streamer-mentioned .message {
     border-color: rgba(255,0,80,0.06) !important;
     border-left-color: var(--platform-tiktok) !important;
 }
-.item.kick.chat.streamer-mentioned .message {
+#chat .item.kick.chat.streamer-mentioned .message {
     border-color: rgba(72,212,21,0.06) !important;
     border-left-color: var(--platform-kick) !important;
 }
