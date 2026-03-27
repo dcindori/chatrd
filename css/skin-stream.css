@@ -623,7 +623,6 @@ body {
 #container #chat .event.twitch.bits[class*="bigger-than-"] .message {
     animation: none !important;
     background-size: auto !important;
-    background-image: none !important;
 }
 
 /* Gift info container — compact inline layout */
