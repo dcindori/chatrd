@@ -416,7 +416,7 @@ body {
     align-items: center !important;
     gap: 6px !important;
     background: rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) !important;
-    border: 1px solid rgba(255,255,255,0.04) !important;
+    border: 1px solid transparent !important;
     outline: none !important;
     outline-offset: 0 !important;
     border-radius: var(--chatrd-bubble-radius) !important;
@@ -426,7 +426,7 @@ body {
     -webkit-backdrop-filter: blur(12px);
     line-height: 1.5 !important;
     position: relative;
-    overflow: hidden;
+    overflow: visible !important;
     box-sizing: border-box !important;
 }
 
@@ -704,58 +704,25 @@ body {
 /* 1K+ */
 #chat .event[class*="bigger-than-1000"] .message,
 #chat .item[class*="bigger-than-1000"] .message {
-    border-left-width: 4px !important;
-    box-shadow: 0 0 18px rgba(251,191,36,0.1);
-}
-
-/* 1K+ shimmer sweep */
-#chat .event[class*="bigger-than-1000"] .message::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 60%, transparent 100%);
-    animation: eventShimmer 4s ease-in-out infinite;
-    pointer-events: none;
+    box-shadow: 0 0 8px rgba(251,191,36,0.08);
 }
 
 /* 5K+ */
 #chat .event[class*="bigger-than-5000"] .message,
 #chat .item[class*="bigger-than-5000"] .message {
-    box-shadow: 0 0 28px rgba(251,191,36,0.18);
-}
-
-#chat .event[class*="bigger-than-5000"] .message::after {
-    animation-duration: 3s;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 60%, transparent 100%);
+    box-shadow: 0 0 10px rgba(251,191,36,0.12);
 }
 
 /* 10K+ */
 #chat .event[class*="bigger-than-10000"] .message,
 #chat .item[class*="bigger-than-10000"] .message {
-    box-shadow: 0 0 36px rgba(251,191,36,0.28);
-    border-color: rgba(251,191,36,0.25) !important;
-    border-left-color: #fbbf24 !important;
-}
-
-#chat .event[class*="bigger-than-10000"] .message::after {
-    animation-duration: 2.5s;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,200,50,0.05) 40%, rgba(255,200,50,0.1) 50%, rgba(255,200,50,0.05) 60%, transparent 100%);
+    box-shadow: 0 0 12px rgba(251,191,36,0.15);
 }
 
 /* 50K+ */
 #chat .event[class*="bigger-than-50000"] .message,
 #chat .item[class*="bigger-than-50000"] .message {
-    box-shadow: 0 0 45px rgba(251,191,36,0.35), 0 0 70px rgba(251,191,36,0.12);
-    border-color: rgba(251,191,36,0.4) !important;
-    border-left-color: #fbbf24 !important;
-}
-
-#chat .event[class*="bigger-than-50000"] .message::after {
-    animation-duration: 2s;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,200,50,0.06) 40%, rgba(255,200,50,0.14) 50%, rgba(255,200,50,0.06) 60%, transparent 100%);
+    box-shadow: 0 0 14px rgba(251,191,36,0.18);
 }
 
 
