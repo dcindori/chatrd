@@ -103,7 +103,7 @@ body {
 #chat:not(.horizontal):not(.oneline) .item .message {
     display: grid !important;
     grid-template-columns: var(--chatrd-info-width) auto 1fr;
-    align-items: start;
+    align-items: center;
     column-gap: 7px;
 }
 
@@ -136,10 +136,6 @@ body {
     outline: none !important;
     box-shadow: none !important;
     overflow: visible !important;
-    /* Position: center with first text line (21px line, 6px dot → 7.5px offset) */
-    align-self: start !important;
-    justify-self: center !important;
-    margin-top: 8px !important;
 }
 
 #chat:not(.horizontal):not(.oneline) .item.twitch .message::before {
