@@ -107,21 +107,27 @@ body {
     column-gap: 7px;
 }
 
-/* Platform dot = separator (column 2) — ALWAYS visible including mentions */
+/* Platform dot = separator (column 2) */
 #chat:not(.horizontal):not(.oneline) .item .message::before {
+    /* What it is */
     content: '' !important;
-    grid-column: 2;
+    display: flex !important;
     width: 6px !important;
     height: 6px !important;
+    min-width: 6px !important;
+    max-width: 6px !important;
     min-height: 6px !important;
     max-height: 6px !important;
     border-radius: 50% !important;
     background: rgba(255,255,255,0.15);
-    line-height: 0 !important;
-    /* Reset any base CSS overrides */
+    /* Grid placement + centering */
+    grid-column: 2;
+    align-self: center !important;
+    justify-self: center !important;
+    /* Kill everything inherited */
     position: static !important;
-    display: block !important;
     font-size: 0 !important;
+    line-height: 0 !important;
     color: transparent !important;
     text-transform: none !important;
     letter-spacing: normal !important;
