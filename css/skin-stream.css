@@ -574,43 +574,108 @@ body {
 
 
 /* ---- Platform gradient backgrounds ---- */
+/* NOTE: Module CSS loads AFTER skin CSS in chat.html, so we need
+   higher specificity (#container #chat) to beat module !important */
 
-#chat .event.twitch .message {
+#container #chat .event.twitch .message {
     background: linear-gradient(100deg, rgba(145,70,255,0.28) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid var(--platform-twitch) !important;
 }
-#chat .event.youtube .message {
+#container #chat .event.youtube .message {
     background: linear-gradient(100deg, rgba(255,0,0,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid var(--platform-youtube) !important;
 }
-#chat .event.tiktok .message {
+#container #chat .event.tiktok .message {
     background: linear-gradient(100deg, rgba(255,0,80,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid var(--platform-tiktok) !important;
 }
-#chat .event.kick .message {
+#container #chat .event.kick .message {
     background: linear-gradient(100deg, rgba(72,212,21,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid var(--platform-kick) !important;
 }
-#chat .event.streamelements .message,
-#chat .event.streamlabs .message {
+#container #chat .event.streamelements .message,
+#container #chat .event.streamlabs .message {
     background: linear-gradient(100deg, rgba(245,158,66,0.25) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid #f59e42 !important;
 }
-#chat .event.kofi .message {
+#container #chat .event.kofi .message {
     background: linear-gradient(100deg, rgba(41,171,224,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid #29abe0 !important;
 }
-#chat .event.patreon .message {
+#container #chat .event.patreon .message {
     background: linear-gradient(100deg, rgba(255,66,77,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid #ff424d !important;
 }
-#chat .event.fourthwall .message {
+#container #chat .event.fourthwall .message {
     background: linear-gradient(100deg, rgba(99,102,241,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid #6366f1 !important;
 }
-#chat .event.tipeeestream .message {
+#container #chat .event.tipeeestream .message {
     background: linear-gradient(100deg, rgba(73,197,182,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%) !important;
     border-left: 3px solid #49c5b6 !important;
+}
+
+
+/* ========================================== */
+/*  TIKTOK GIFT REDESIGN                       */
+/* ========================================== */
+
+/* Override module animated gradient backgrounds for big events */
+#container #chat .event.tiktok.gift[class*="bigger-than-"] .message,
+#container #chat .event.twitch.bits[class*="bigger-than-"] .message {
+    animation: none !important;
+    background-size: auto !important;
+    background-image: none !important;
+}
+
+/* Gift info container — compact inline layout */
+#chat .event.tiktok.gift .value .gift-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+#chat .event.tiktok.gift .info {
+    margin: 0 !important;
+}
+
+/* Gift image — small inline icon */
+#chat .event.tiktok.gift .value span.gift-image img {
+    height: 22px !important;
+    width: auto !important;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4)) !important;
+}
+
+#chat .event.tiktok.gift.small-gift .value span.gift-image img {
+    height: 18px !important;
+}
+
+/* Coin value — compact pill badge */
+#chat .event.tiktok.gift .value span.gift-value {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    background: rgba(0,0,0,0.35) !important;
+    padding: 2px 7px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #fbbf24 !important;
+    line-height: 1.3 !important;
+}
+
+/* Coin icon inside pill */
+#chat .event.tiktok.gift .value span.gift-value img {
+    width: 12px !important;
+    height: 12px !important;
+    transform: none !important;
+    filter: none !important;
+    margin: 0 !important;
+}
+
+/* Gift action text — keep "gifted you" readable */
+#chat .event.tiktok.gift .action strong {
+    color: #fff !important;
 }
 
 
