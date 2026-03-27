@@ -1,0 +1,743 @@
+/* ================================================ */
+/*  ChatRD Skin: Stream                              */
+/*  3-column grid: username [platform dot] message   */
+/* ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+    /* ---- ADJUST THESE ---- */
+    --chatrd-bg-opacity: 0.55;
+    --chatrd-info-width: 160px;
+    --chatrd-bubble-radius: 8px;
+    --chatrd-bubble-color: 14, 14, 18;
+    --chatrd-event-color: 16, 16, 22;
+
+    /* @mention */
+    --chatrd-mention-bg-opacity: 0.5;
+    --chatrd-mention-border: #f59e0b;
+
+    /* Platform colors */
+    --platform-twitch: #9146ff;
+    --platform-youtube: #ff0000;
+    --platform-tiktok: #ff0050;
+    --platform-kick: #48d415;
+}
+
+
+/* ==================== */
+/*  FONT                */
+/* ==================== */
+
+body {
+    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ==================== */
+/*  TRANSPARENT BASE    */
+/* ==================== */
+
+#container .wrapper {
+    background: transparent !important;
+}
+
+
+/* ==================== */
+/*  CHAT AREA           */
+/* ==================== */
+
+#chat {
+    padding: 4px 0;
+    gap: 0;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+#chat::-webkit-scrollbar { width: 4px; }
+#chat::-webkit-scrollbar-track { background: transparent; }
+#chat::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); border-radius: 2px; }
+
+
+/* =============================== */
+/*  CHAT MESSAGE BUBBLES           */
+/* =============================== */
+
+#chat .item {
+    font-size: 14px;
+    line-height: 1.6;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+}
+
+#chat .item .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--chatrd-bubble-radius);
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 200ms ease;
+}
+
+#chat:not(.horizontal):not(.oneline) .item {
+    margin-bottom: 3px !important;
+}
+
+#chat .item .message:hover {
+    background: rgba(var(--chatrd-bubble-color), calc(var(--chatrd-bg-opacity) + 0.05));
+}
+
+
+/* ========================================== */
+/*  3-COLUMN GRID LAYOUT                      */
+/*  [info right-aligned] [dot] [message]      */
+/* ========================================== */
+
+#chat:not(.horizontal):not(.oneline) .item .message {
+    display: grid;
+    grid-template-columns: var(--chatrd-info-width) auto 1fr;
+    align-items: center;
+    column-gap: 10px;
+}
+
+/* Platform dot = separator (column 2) — ALWAYS visible including mentions */
+#chat:not(.horizontal):not(.oneline) .item .message::before {
+    content: '' !important;
+    grid-column: 2;
+    grid-row: 1 / -1;
+    width: 7px !important;
+    height: 7px !important;
+    min-height: 7px !important;
+    max-height: 7px !important;
+    border-radius: 50% !important;
+    place-self: center;
+    background: rgba(255,255,255,0.15);
+    line-height: 0 !important;
+    /* Reset any base CSS overrides */
+    position: static !important;
+    display: block !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-weight: normal !important;
+    top: auto !important;
+    right: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-shadow: none !important;
+    transform: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+#chat:not(.horizontal):not(.oneline) .item.twitch .message::before {
+    background: var(--platform-twitch);
+    box-shadow: 0 0 6px rgba(145,70,255,0.5);
+}
+#chat:not(.horizontal):not(.oneline) .item.youtube .message::before {
+    background: var(--platform-youtube);
+    box-shadow: 0 0 6px rgba(255,0,0,0.4);
+}
+#chat:not(.horizontal):not(.oneline) .item.tiktok .message::before {
+    background: var(--platform-tiktok);
+    box-shadow: 0 0 6px rgba(255,0,80,0.4);
+}
+#chat:not(.horizontal):not(.oneline) .item.kick .message::before {
+    background: var(--platform-kick);
+    box-shadow: 0 0 6px rgba(72,212,21,0.4);
+}
+
+/* Full-width special elements */
+#chat:not(.horizontal):not(.oneline) .item .first-message,
+#chat:not(.horizontal):not(.oneline) .item .shared-chat,
+#chat:not(.horizontal):not(.oneline) .item .header,
+#chat:not(.horizontal):not(.oneline) .item .reply {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+}
+
+/* Info section: column 1, right-aligned, vertically centered */
+#chat:not(.horizontal):not(.oneline) .item .info {
+    grid-column: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+/* Element order: platform > avatar > badges > pronouns > username */
+#chat:not(.horizontal):not(.oneline) .item .info .timestamp  { order: 0; flex-shrink: 0; }
+#chat:not(.horizontal):not(.oneline) .item .info .platform   { order: 1; flex-shrink: 0; display: flex; align-items: center; }
+#chat:not(.horizontal):not(.oneline) .item .info .avatar     { order: 2; flex-shrink: 0; }
+#chat:not(.horizontal):not(.oneline) .item .info .badges     { order: 3; flex-shrink: 0; display: flex; align-items: center; }
+#chat:not(.horizontal):not(.oneline) .item .info .pronouns   { order: 4; flex-shrink: 0; }
+#chat:not(.horizontal):not(.oneline) .item .info .user {
+    order: 5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Message text: column 3 */
+#chat:not(.horizontal):not(.oneline) .item .actual-message {
+    grid-column: 3;
+    margin-top: 0 !important;
+    min-width: 0;
+    word-break: break-word;
+    color: rgba(255,255,255,0.78);
+    font-weight: 500;
+}
+
+/* Grouped: hide dot, indent message */
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message {
+    padding: 3px 14px !important;
+}
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message::before {
+    visibility: hidden;
+}
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message .actual-message {
+    grid-column: 3;
+}
+
+
+/* ==================== */
+/*  AVATAR              */
+/* ==================== */
+
+#chat .item .info .avatar {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat .item .info .avatar img {
+    height: 22px !important;
+    width: 22px !important;
+    object-fit: cover;
+}
+
+/* Platform-colored avatar rings */
+#chat .item.twitch  .info .avatar { border-color: rgba(145,70,255,0.45); }
+#chat .item.youtube .info .avatar { border-color: rgba(255,0,0,0.35); }
+#chat .item.tiktok  .info .avatar { border-color: rgba(255,0,80,0.35); }
+#chat .item.kick    .info .avatar { border-color: rgba(72,212,21,0.35); }
+
+
+/* ==================== */
+/*  PLATFORM DOTS       */
+/* ==================== */
+
+#chat .item .platform .hidden-platform {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+#chat .item .platform .hidden-platform.twitch  { background: var(--platform-twitch);  box-shadow: 0 0 5px rgba(145,70,255,0.4); }
+#chat .item .platform .hidden-platform.youtube { background: var(--platform-youtube); box-shadow: 0 0 5px rgba(255,0,0,0.35); }
+#chat .item .platform .hidden-platform.tiktok  { background: var(--platform-tiktok);  box-shadow: 0 0 5px rgba(255,0,80,0.35); }
+#chat .item .platform .hidden-platform.kick    { background: var(--platform-kick);    box-shadow: 0 0 5px rgba(72,212,21,0.35); }
+
+
+/* ==================== */
+/*  USERNAME            */
+/* ==================== */
+
+#chat .user {
+    font-weight: 700;
+    font-size: 0.92em;
+    letter-spacing: -0.01em;
+}
+
+
+/* ==================== */
+/*  TIMESTAMP           */
+/* ==================== */
+
+#chat .item .timestamp {
+    background: rgba(255,255,255,0.04);
+    padding: 0 5px;
+    font-size: 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ==================== */
+/*  PRONOUNS            */
+/* ==================== */
+
+#chat .item .pronouns {
+    background: rgba(255,255,255,0.04);
+    padding: 0 5px;
+    font-size: 10px;
+    border-radius: 3px;
+    color: rgba(255,255,255,0.25);
+}
+
+
+/* ==================== */
+/*  LINKS               */
+/* ==================== */
+
+#chat .item .message .actual-message a {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+
+/* ==================== */
+/*  REPLY               */
+/* ==================== */
+
+#chat .item .reply {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+}
+
+
+/* ==================== */
+/*  FIRST-TIME CHATTER  */
+/* ==================== */
+
+#chat .item.first-chatter .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity)) !important;
+    border: 1px solid rgba(255,255,255,0.06);
+    outline: none;
+}
+
+#chat .item .first-message {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+/* ==================== */
+/*  SHARED CHAT         */
+/* ==================== */
+
+#chat .item .shared-chat span.origin {
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 1px 7px;
+}
+
+
+/* ==================== */
+/*  ANNOUNCEMENT        */
+/* ==================== */
+
+#chat .item.announcement .message {
+    outline: none;
+}
+
+
+/* ============================================ */
+/*  @ MENTIONS  (streamer-mentioned)            */
+/*  Left border accent only — no label           */
+/*  ::before dot is preserved via global reset   */
+/* ============================================ */
+
+.item.chat.streamer-mentioned .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-mention-bg-opacity)) !important;
+    border: 1px solid rgba(245, 158, 11, 0.06) !important;
+    border-left: 3px solid var(--chatrd-mention-border) !important;
+}
+
+/* Kill the default red overlay ::after */
+.item.chat.streamer-mentioned .message::after {
+    display: none !important;
+}
+
+/* Platform mention tints */
+.item.twitch.chat.streamer-mentioned .message {
+    border-color: rgba(145,70,255,0.08) !important;
+    border-left-color: var(--platform-twitch) !important;
+}
+.item.youtube.chat.streamer-mentioned .message {
+    border-color: rgba(255,0,0,0.06) !important;
+    border-left-color: var(--platform-youtube) !important;
+}
+.item.tiktok.chat.streamer-mentioned .message {
+    border-color: rgba(255,0,80,0.06) !important;
+    border-left-color: var(--platform-tiktok) !important;
+}
+.item.kick.chat.streamer-mentioned .message {
+    border-color: rgba(72,212,21,0.06) !important;
+    border-left-color: var(--platform-kick) !important;
+}
+
+
+/* ================================================= */
+/*  EVENTS: Subs, Gifts, Tips, Bits, Raids            */
+/*  Full-width, aligned with chat messages             */
+/* ================================================= */
+
+#chat .event {
+    margin: 3px 0 !important;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+#chat .event .message {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity));
+    border: 1px solid rgba(255,255,255,0.04);
+    outline: none !important;
+    outline-offset: 0;
+    border-radius: var(--chatrd-bubble-radius);
+    padding: 8px 14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    line-height: 1.6;
+    position: relative;
+    overflow: hidden;
+}
+
+#chat .event .info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Event platform dot */
+#chat .event .platform {
+    display: flex;
+    align-items: center;
+    height: auto !important;
+}
+
+
+/* ---- Event avatar: icon circle ---- */
+
+#chat .event .info .avatar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: none;
+}
+
+#chat .event .info .avatar img {
+    width: 22px !important;
+    height: 22px !important;
+    object-fit: cover;
+}
+
+/* Empty avatar = platform-colored circle with icon */
+#chat .event .info .avatar:empty {
+    background: rgba(255,255,255,0.1);
+}
+
+#chat .event.twitch       .info .avatar:empty { background: var(--platform-twitch); }
+#chat .event.youtube      .info .avatar:empty { background: var(--platform-youtube); }
+#chat .event.tiktok       .info .avatar:empty { background: var(--platform-tiktok); }
+#chat .event.kick         .info .avatar:empty { background: var(--platform-kick); }
+#chat .event.streamelements .info .avatar:empty { background: #f59e42; }
+#chat .event.streamlabs   .info .avatar:empty { background: #80f5d2; }
+#chat .event.kofi         .info .avatar:empty { background: #29abe0; }
+#chat .event.patreon      .info .avatar:empty { background: #ff424d; }
+#chat .event.fourthwall   .info .avatar:empty { background: #6366f1; }
+#chat .event.tipeeestream .info .avatar:empty { background: #49c5b6; }
+
+/* FontAwesome icons inside empty avatar circles */
+#chat .event .info .avatar:empty::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 9px;
+    color: rgba(255,255,255,0.9);
+    text-shadow: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+#chat .event.sub          .info .avatar:empty::before { content: '\f005'; } /* star */
+#chat .event.resub        .info .avatar:empty::before { content: '\f005'; } /* star */
+#chat .event.gift         .info .avatar:empty::before { content: '\f06b'; } /* gift */
+#chat .event.bits         .info .avatar:empty::before { content: '\f51e'; } /* coins */
+#chat .event.reward       .info .avatar:empty::before { content: '\f005'; } /* star */
+#chat .event.raid         .info .avatar:empty::before { content: '\f0c0'; } /* users */
+#chat .event.follow       .info .avatar:empty::before { content: '\f004'; } /* heart */
+#chat .event.share        .info .avatar:empty::before { content: '\f064'; } /* share */
+#chat .event.like         .info .avatar:empty::before { content: '\f004'; } /* heart */
+
+/* Tips/donations */
+#chat .event.streamelements .info .avatar:empty::before,
+#chat .event.streamlabs     .info .avatar:empty::before,
+#chat .event.kofi           .info .avatar:empty::before,
+#chat .event.patreon        .info .avatar:empty::before,
+#chat .event.fourthwall     .info .avatar:empty::before,
+#chat .event.tipeeestream   .info .avatar:empty::before { content: '\f155'; } /* dollar-sign */
+
+
+/* ---- Event text styling ---- */
+
+#chat .event .user { font-weight: 700; }
+#chat .event .action { color: rgba(255,255,255,0.55); font-weight: 500; }
+
+#chat .event .value {
+    font-weight: 700;
+    color: #fbbf24;
+    font-size: 1.1em;
+}
+
+#chat .event.sub .value, #chat .event.resub .value { color: #a78bfa; }
+#chat .event.raid .value { color: #60a5fa; }
+#chat .event.follow .value { color: rgba(255,255,255,0.5); }
+
+#chat .event .actual-message {
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Subtle follow */
+#chat .event.follow .message { padding: 7px 14px; }
+
+/* TikTok join: invisible */
+#chat .event.tiktok.join .message {
+    background: none !important;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+
+/* ---- Platform gradient backgrounds ---- */
+
+#chat .event.twitch .message {
+    background: linear-gradient(100deg, rgba(145,70,255,0.28) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid var(--platform-twitch);
+}
+#chat .event.youtube .message {
+    background: linear-gradient(100deg, rgba(255,0,0,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid var(--platform-youtube);
+}
+#chat .event.tiktok .message {
+    background: linear-gradient(100deg, rgba(255,0,80,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid var(--platform-tiktok);
+}
+#chat .event.kick .message {
+    background: linear-gradient(100deg, rgba(72,212,21,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid var(--platform-kick);
+}
+#chat .event.streamelements .message,
+#chat .event.streamlabs .message {
+    background: linear-gradient(100deg, rgba(245,158,66,0.25) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid #f59e42;
+}
+#chat .event.kofi .message {
+    background: linear-gradient(100deg, rgba(41,171,224,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid #29abe0;
+}
+#chat .event.patreon .message {
+    background: linear-gradient(100deg, rgba(255,66,77,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid #ff424d;
+}
+#chat .event.fourthwall .message {
+    background: linear-gradient(100deg, rgba(99,102,241,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid #6366f1;
+}
+#chat .event.tipeeestream .message {
+    background: linear-gradient(100deg, rgba(73,197,182,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 60%);
+    border-left: 3px solid #49c5b6;
+}
+
+
+/* ========================================== */
+/*  EVENT ENTRANCE ANIMATION                   */
+/* ========================================== */
+
+@keyframes eventSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+#chat .event {
+    animation: eventSlideIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+
+/* ========================================== */
+/*  EVENT PLATFORM DOT PULSE                   */
+/* ========================================== */
+
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.5; }
+}
+
+#chat .event .platform .hidden-platform {
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+
+/* ========================================== */
+/*  BIG EVENTS: escalating glow + shimmer      */
+/* ========================================== */
+
+@keyframes eventShimmer {
+    0%   { left: -100%; }
+    100% { left: 200%; }
+}
+
+/* 1K+ */
+#chat .event[class*="bigger-than-1000"] .message,
+#chat .item[class*="bigger-than-1000"] .message {
+    border-left-width: 4px;
+    box-shadow: 0 0 18px rgba(251,191,36,0.1);
+}
+
+/* 1K+ shimmer sweep */
+#chat .event[class*="bigger-than-1000"] .message::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 60%, transparent 100%);
+    animation: eventShimmer 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* 5K+ */
+#chat .event[class*="bigger-than-5000"] .message,
+#chat .item[class*="bigger-than-5000"] .message {
+    box-shadow: 0 0 28px rgba(251,191,36,0.18);
+}
+
+#chat .event[class*="bigger-than-5000"] .message::after {
+    animation-duration: 3s;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 60%, transparent 100%);
+}
+
+/* 10K+ */
+#chat .event[class*="bigger-than-10000"] .message,
+#chat .item[class*="bigger-than-10000"] .message {
+    box-shadow: 0 0 36px rgba(251,191,36,0.28);
+    border-color: rgba(251,191,36,0.25) !important;
+    border-left-color: #fbbf24 !important;
+}
+
+#chat .event[class*="bigger-than-10000"] .message::after {
+    animation-duration: 2.5s;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,200,50,0.05) 40%, rgba(255,200,50,0.1) 50%, rgba(255,200,50,0.05) 60%, transparent 100%);
+}
+
+/* 50K+ */
+#chat .event[class*="bigger-than-50000"] .message,
+#chat .item[class*="bigger-than-50000"] .message {
+    box-shadow: 0 0 45px rgba(251,191,36,0.35), 0 0 70px rgba(251,191,36,0.12);
+    border-color: rgba(251,191,36,0.4) !important;
+    border-left-color: #fbbf24 !important;
+}
+
+#chat .event[class*="bigger-than-50000"] .message::after {
+    animation-duration: 2s;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,200,50,0.06) 40%, rgba(255,200,50,0.14) 50%, rgba(255,200,50,0.06) 60%, transparent 100%);
+}
+
+
+/* ==================== */
+/*  STATISTICS BAR      */
+/* ==================== */
+
+#statistics .platform {
+    background: rgba(var(--chatrd-bubble-color), 0.6) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 7px 11px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    outline: none;
+}
+
+
+/* ==================== */
+/*  CHAT INPUT          */
+/* ==================== */
+
+#chat-input input[type=text] {
+    background: rgba(var(--chatrd-bubble-color), 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+}
+#chat-input input[type=text]:focus {
+    border-color: rgba(255,255,255,0.12);
+}
+
+
+/* ==================== */
+/*  MODERATION          */
+/* ==================== */
+
+.item.chat .chatmoderation button {
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    border-radius: 4px;
+}
+
+
+/* ====================================== */
+/*  ONE-LINE LAYOUT                       */
+/* ====================================== */
+
+#chat.oneline .item .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: var(--chatrd-bubble-radius);
+}
+#chat.oneline .item:not(.grouped) .message { padding: 5px 12px; }
+#chat.oneline .item.grouped .message { padding: 3px 12px; }
+#chat.oneline .item { margin-bottom: 2px !important; }
+
+
+/* ====================================== */
+/*  HORIZONTAL LAYOUT                     */
+/* ====================================== */
+
+#chat.horizontal .item .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: var(--chatrd-bubble-radius);
+}

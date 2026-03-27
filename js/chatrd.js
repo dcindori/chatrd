@@ -45,12 +45,19 @@ const SKINS = {
     default: "skin-default.css",
     nutting: "skin-nutting.css",
     kimballs: "skin-kimballs.css",
-    bubbles: "skin-bubbles.css"
+    bubbles: "skin-bubbles.css",
+    stream: "skin-stream.css"
 };
 
-const skinFile = SKINS[chatrdSkin] || SKINS.default;
 const skinLink = document.getElementById("chatrd-skins");
-skinLink.href = `css/${skinFile}`;
+
+/* Support external skin URLs (e.g. hosted on your own GitHub Pages repo) */
+if (chatrdSkin.startsWith("https://") || chatrdSkin.startsWith("http://")) {
+    skinLink.href = chatrdSkin;
+} else {
+    const skinFile = SKINS[chatrdSkin] || SKINS.default;
+    skinLink.href = `css/${skinFile}`;
+}
 
 const chatRDBody = document.body;
 chatRDBody.style.fontFamily = chatFontFamily;
