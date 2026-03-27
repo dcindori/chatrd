@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatRD Stream Skin Preview</title>
+    <title>ChatRD Stream Skin 2.0 Preview</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
@@ -25,56 +25,151 @@
     <link rel="stylesheet" href="js/modules/fourthwall/module.css">
 
     <style>
-        /* Preview-only: background + controls */
+        /* Preview-only styles */
         body {
             margin: 0; height: 100vh; overflow: hidden;
-            background: linear-gradient(135deg, #0a0a12 0%, #12122a 35%, #0d1a2a 65%, #1e1040 100%);
-            background-size: 400% 400%; animation: bg 25s ease infinite;
+            /* Bright colorful gradient simulating gameplay — tests readability */
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 20%, #0f3460 40%, #533483 60%, #e94560 80%, #f38181 100%);
+            background-size: 600% 600%;
+            animation: bg 20s ease infinite;
         }
-        @keyframes bg { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes bg {
+            0%   { background-position: 0% 50%; }
+            25%  { background-position: 50% 0%; }
+            50%  { background-position: 100% 50%; }
+            75%  { background-position: 50% 100%; }
+            100% { background-position: 0% 50%; }
+        }
 
-        .ctrl{position:fixed;top:10px;right:10px;z-index:100;display:flex;flex-direction:column;gap:5px;font-family:"Asap Condensed",sans-serif}
-        .ctrl label,.ctrl button{display:flex;align-items:center;gap:7px;color:#fff;font-size:11px;font-weight:500;background:rgba(8,8,14,0.7);backdrop-filter:blur(12px);padding:6px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);cursor:pointer}
-        .ctrl button{justify-content:center}
-        .ctrl button:hover{background:rgba(255,255,255,0.08)}
-        .ctrl input[type=range]{width:90px;accent-color:#9146ff}
-        .ctrl span{font-variant-numeric:tabular-nums;min-width:34px;text-align:right;color:rgba(255,255,255,0.4);font-size:10px}
+        /* Scene toggle backgrounds */
+        body.scene-dark {
+            background: linear-gradient(135deg, #0a0a12 0%, #12122a 35%, #0d1a2a 65%, #1e1040 100%);
+            background-size: 400% 400%;
+        }
+        body.scene-bright {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ff9a9e 50%, #a18cd1 75%, #fbc2eb 100%);
+            background-size: 600% 600%;
+            animation: bg 15s ease infinite;
+        }
+        body.scene-green {
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 30%, #2d5016 60%, #0b3d0b 100%);
+            background-size: 400% 400%;
+            animation: bg 18s ease infinite;
+        }
+
+        .ctrl {
+            position: fixed; top: 10px; right: 10px; z-index: 100;
+            display: flex; flex-direction: column; gap: 4px;
+            font-family: "Inter", system-ui, sans-serif;
+        }
+        .ctrl label, .ctrl button, .ctrl .row {
+            display: flex; align-items: center; gap: 6px;
+            color: #fff; font-size: 10px; font-weight: 500;
+            background: rgba(8,8,14,0.75);
+            padding: 5px 9px; border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+        }
+        .ctrl button { justify-content: center; }
+        .ctrl button:hover { background: rgba(255,255,255,0.08); }
+        .ctrl button.active { background: rgba(145,70,255,0.3); border-color: rgba(145,70,255,0.3); }
+        .ctrl input[type=range] { width: 80px; accent-color: #9146ff; }
+        .ctrl span.val { font-variant-numeric: tabular-nums; min-width: 30px; text-align: right; color: rgba(255,255,255,0.35); font-size: 9px; }
+        .ctrl .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 2px 0; }
+        .ctrl .scene-btns { display: flex; gap: 3px; }
+        .ctrl .scene-btns button { flex: 1; font-size: 9px; padding: 3px 6px; }
     </style>
 </head>
 <body>
     <div class="ctrl">
-        <label>Opacity <input type="range" id="sl-o" min="0" max="100" value="75"><span id="vo">0.75</span></label>
-        <label>Info W <input type="range" id="sl-w" min="50" max="200" value="85"><span id="vw">85px</span></label>
+        <label>Opacity <input type="range" id="sl-o" min="0" max="100" value="50"><span class="val" id="vo">0.50</span></label>
+        <label>Info W <input type="range" id="sl-w" min="40" max="200" value="80"><span class="val" id="vw">80px</span></label>
+        <div class="divider"></div>
+        <div class="scene-btns">
+            <button onclick="setScene('default')" title="Gameplay">Game</button>
+            <button onclick="setScene('dark')" title="Dark">Dark</button>
+            <button onclick="setScene('bright')" title="Bright">Light</button>
+            <button onclick="setScene('green')" title="Nature">Green</button>
+        </div>
+        <button id="btn-fade" class="active" onclick="toggleFade()">Fade: ON</button>
+        <div class="divider"></div>
         <button onclick="addMsg()">+ Chat</button>
         <button onclick="addLongMsg()">+ Long Chat</button>
         <button onclick="addMention()">+ @Mention</button>
         <button onclick="addEvt()">+ Event</button>
         <button onclick="addTikTokGift()">+ TikTok Gift</button>
+        <div class="divider"></div>
+        <button onclick="flood()">Flood (20)</button>
     </div>
 
     <div id="container"><div class="wrapper"><div id="chat"></div></div></div>
 
 <script>
-const chat=document.getElementById('chat'), R=document.documentElement.style;
-document.getElementById('sl-o').addEventListener('input',e=>{const v=(e.target.value/100).toFixed(2);R.setProperty('--chatrd-bg-opacity',v);R.setProperty('--chatrd-mention-bg-opacity',Math.min(+v+.12,1).toFixed(2));document.getElementById('vo').textContent=v});
-document.getElementById('sl-w').addEventListener('input',e=>{R.setProperty('--chatrd-info-width',e.target.value+'px');document.getElementById('vw').textContent=e.target.value+'px'});
+const chat = document.getElementById('chat'), R = document.documentElement.style;
 
-const P=['twitch','youtube','tiktok','kick'];
-const U=['NightOwl','PixelDream','StreamKing','CozyVibes','DarkLord','LunaStar','ChillGuy','RetroWave','Sakura','ThunderByte','GlitchWiz','WavyDays','xMoonlit','ZeroDay','FrostByte','NeonPulse'];
-const LU=['SergejJankulowski','MiriamUnterbuchberg','KudaidulJudikaoja','xXDarkShadowSlayerXx'];
-const M=['Hey everyone!','GG that was insane','LMAO no way','Can you play that song again?','First time here love the stream','Let\'s gooo','This game is so good','How long have you been streaming?','What a play!','Hello from Germany!','The vibes are immaculate tonight','W stream as always','That combo was sick','bruh moment','clipped and shipped','gg wp no re','does anyone know the song?'];
-const LM=['evo zasto je zavlacio sa ledom procitana knjiga i onda se desi ovo sto se desilo lol','This is a really long message that should wrap to a second line to test how the grid alignment handles multiline text in the chat bubble','UZ TO SVE TO JE POLA KG LEDA A NIKO NISTA NE KAZE'];
-const C=['#a970ff','#ff4444','#ff3070','#48d415','#3498db','#e74c3c','#f39c12','#1abc9c','#e91e63','#9b59b6','#2ecc71','#ff6b6b','#ffd93d','#6bcb77'];
-const r=a=>a[Math.floor(Math.random()*a.length)];
-let n=0;
+// Sliders
+document.getElementById('sl-o').addEventListener('input', e => {
+    const v = (e.target.value / 100).toFixed(2);
+    R.setProperty('--chatrd-bg-opacity', v);
+    R.setProperty('--chatrd-mention-bg-opacity', Math.min(+v + 0.08, 1).toFixed(2));
+    document.getElementById('vo').textContent = v;
+});
+document.getElementById('sl-w').addEventListener('input', e => {
+    R.setProperty('--chatrd-info-width', e.target.value + 'px');
+    document.getElementById('vw').textContent = e.target.value + 'px';
+});
 
-function svg(c){const L=String.fromCharCode(65+Math.floor(Math.random()*26));return`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="${c}" rx="24"/><text x="24" y="32" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="Asap Condensed,sans-serif">${L}</text></svg>`)}`}
+// Scene switcher
+function setScene(s) {
+    document.body.className = s === 'default' ? '' : 'scene-' + s;
+}
 
-function anim(el){el.style.opacity='0';el.style.transform='translateY(6px)';requestAnimationFrame(()=>{el.style.transition='opacity 200ms ease,transform 200ms ease';el.style.opacity='1';el.style.transform='translateY(0)'})}
+// Fade mask toggle
+let fadeOn = true;
+function toggleFade() {
+    fadeOn = !fadeOn;
+    const btn = document.getElementById('btn-fade');
+    if (fadeOn) {
+        chat.style.removeProperty('-webkit-mask-image');
+        chat.style.removeProperty('mask-image');
+        btn.textContent = 'Fade: ON';
+        btn.classList.add('active');
+    } else {
+        chat.style.setProperty('-webkit-mask-image', 'none');
+        chat.style.setProperty('mask-image', 'none');
+        btn.textContent = 'Fade: OFF';
+        btn.classList.remove('active');
+    }
+}
 
-function addMsg(){
-    const p=r(P),u=r(U),m=r(M),c=r(C),i='m'+(n++);
-    chat.insertAdjacentHTML('afterbegin',`
+// Data
+const P = ['twitch','youtube','tiktok','kick'];
+const U = ['NightOwl','PixelDream','StreamKing','CozyVibes','DarkLord','LunaStar','ChillGuy','RetroWave','Sakura','ThunderByte','GlitchWiz','WavyDays','xMoonlit','ZeroDay','FrostByte','NeonPulse'];
+const LU = ['SergejJankulowski','MiriamUnterbuchberg','KudaidulJudikaoja','xXDarkShadowSlayerXx'];
+const M = ['Hey everyone!','GG that was insane','LMAO no way','Can you play that song again?','First time here love the stream','Let\'s gooo','This game is so good','How long have you been streaming?','What a play!','Hello from Germany!','The vibes are immaculate tonight','W stream as always','That combo was sick','bruh moment','clipped and shipped','gg wp no re','does anyone know the song?'];
+const LM = ['evo zasto je zavlacio sa ledom procitana knjiga i onda se desi ovo sto se desilo lol','This is a really long message that should wrap to a second line to test how the grid alignment handles multiline text in the chat bubble','UZ TO SVE TO JE POLA KG LEDA A NIKO NISTA NE KAZE'];
+const C = ['#a970ff','#ff4444','#ff3070','#48d415','#3498db','#e74c3c','#f39c12','#1abc9c','#e91e63','#9b59b6','#2ecc71','#ff6b6b','#ffd93d','#6bcb77'];
+const r = a => a[Math.floor(Math.random() * a.length)];
+let n = 0;
+
+function svg(c) {
+    const L = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="${c}" rx="24"/><text x="24" y="32" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="Inter,sans-serif">${L}</text></svg>`)}`;
+}
+
+function anim(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(4px)';
+    requestAnimationFrame(() => {
+        el.style.transition = 'opacity 180ms ease, transform 180ms ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+    });
+}
+
+function addMsg() {
+    const p = r(P), u = r(U), m = r(M), c = r(C), i = 'm' + (n++);
+    chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p}">
             <div class="message">
                 <div class="info">
@@ -87,9 +182,9 @@ function addMsg(){
     anim(document.getElementById(i));
 }
 
-function addLongMsg(){
-    const p=r(P),u=r(LU),m=r(LM),c=r(C),i='m'+(n++);
-    chat.insertAdjacentHTML('afterbegin',`
+function addLongMsg() {
+    const p = r(P), u = r(LU), m = r(LM), c = r(C), i = 'm' + (n++);
+    chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p}">
             <div class="message">
                 <div class="info">
@@ -102,10 +197,10 @@ function addLongMsg(){
     anim(document.getElementById(i));
 }
 
-function addMention(){
-    const p=r(P),u=r(U),c=r(C),i='m'+(n++);
-    const mm=r(['@Streamer that was amazing!','Hey @Streamer check this out','@Streamer when is the next collab?','@Streamer you\'re cracked','yo @Streamer love the new overlay']);
-    chat.insertAdjacentHTML('afterbegin',`
+function addMention() {
+    const p = r(P), u = r(U), c = r(C), i = 'm' + (n++);
+    const mm = r(['@Streamer that was amazing!','Hey @Streamer check this out','@Streamer when is the next collab?','@Streamer you\'re cracked','yo @Streamer love the new overlay']);
+    chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p} streamer-mentioned">
             <div class="message">
                 <div class="info">
@@ -118,8 +213,8 @@ function addMention(){
     anim(document.getElementById(i));
 }
 
-function addEvt(){
-    const evts=[
+function addEvt() {
+    const evts = [
         {p:'twitch',cl:'sub twitch',u:r(U),a:'just subscribed!',v:'Tier 1'},
         {p:'twitch',cl:'resub twitch',u:r(U),a:'subscribed for',v:'14 Months'},
         {p:'twitch',cl:'gift twitch',u:r(U),a:'gifted',v:'5 Subs'},
@@ -133,8 +228,8 @@ function addEvt(){
         {p:'tiktok',cl:'follow tiktok',u:r(U),a:'followed you',v:''},
         {p:'kick',cl:'follow kick',u:r(U),a:'just followed!',v:''},
     ];
-    const e=r(evts),i='m'+(n++);
-    chat.insertAdjacentHTML('afterbegin',`
+    const e = r(evts), i = 'm' + (n++);
+    chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${e.u}" class="event ${e.cl}">
             <div class="message">
                 <div class="info">
@@ -149,19 +244,19 @@ function addEvt(){
     anim(document.getElementById(i));
 }
 
-function addTikTokGift(){
-    const gifts=[
+function addTikTokGift() {
+    const gifts = [
         {name:'Rose',coins:1,img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.png'},
         {name:'Heart Me',coins:1,img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/cbc79846e498eb2a760e91ef22bbbf8e~tplv-obj.png'},
         {name:'Hand Hearts',coins:100,img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/f9518fbbe38f67d8e498dab6b57c1ae8~tplv-obj.png'},
         {name:'Universe',coins:34999,img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/dcf6e88e84ff93fae0be68c3b7f19008~tplv-obj.png'},
     ];
-    const g=r(gifts),u=r(U),i='m'+(n++),count=Math.floor(Math.random()*5)+1;
-    const totalCoins=count*g.coins;
-    let cls='gift tiktok';
-    if(totalCoins>=1000)cls+=' bigger-than-1000';
-    else if(totalCoins>=100)cls+=' bigger-than-100';
-    chat.insertAdjacentHTML('afterbegin',`
+    const g = r(gifts), u = r(U), i = 'm' + (n++), count = Math.floor(Math.random() * 5) + 1;
+    const totalCoins = count * g.coins;
+    let cls = 'gift tiktok';
+    if (totalCoins >= 1000) cls += ' bigger-than-1000';
+    else if (totalCoins >= 100) cls += ' bigger-than-100';
+    chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="event ${cls}">
             <div class="message">
                 <div class="info">
@@ -181,13 +276,25 @@ function addTikTokGift(){
     anim(document.getElementById(i));
 }
 
+function flood() {
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const roll = Math.random();
+            if (roll < 0.65) addMsg();
+            else if (roll < 0.8) addLongMsg();
+            else if (roll < 0.9) addMention();
+            else addEvt();
+        }, i * 80);
+    }
+}
+
 // Seed
-for(let i=0;i<3;i++)addMsg();addEvt();
-for(let i=0;i<2;i++)addMsg();addMention();
-addLongMsg();addMsg();addEvt();addMsg();addMention();
+for (let i = 0; i < 3; i++) addMsg(); addEvt();
+for (let i = 0; i < 2; i++) addMsg(); addMention();
+addLongMsg(); addMsg(); addEvt(); addMsg(); addMention();
 addTikTokGift();
-for(let i=0;i<2;i++)addMsg();addEvt();
-addMsg();addLongMsg();addEvt();addMsg();
+for (let i = 0; i < 2; i++) addMsg(); addEvt();
+addMsg(); addLongMsg(); addEvt(); addMsg();
 </script>
 </body>
 </html>
