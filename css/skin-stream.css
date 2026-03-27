@@ -8,7 +8,7 @@
 :root {
     /* ---- ADJUST THESE ---- */
     --chatrd-bg-opacity: 0.50;           /* LINE 11 — lower = more gameplay visible */
-    --chatrd-info-width: 80px;           /* LINE 12 — username column width */
+    --chatrd-info-width: 110px;          /* LINE 12 — username column width */
     --chatrd-bubble-radius: 6px;
     --chatrd-bubble-color: 8, 8, 14;
     --chatrd-event-color: 10, 10, 18;
