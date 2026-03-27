@@ -42,7 +42,7 @@ const userColors = new Map();
 
 /* ✅ Explicit whitelist */
 const SKINS = {
-    default: "skin-default.css",
+    default: "skin-stream.css",
     nutting: "skin-nutting.css",
     kimballs: "skin-kimballs.css",
     bubbles: "skin-bubbles.css",
