@@ -8,7 +8,7 @@
 :root {
     /* ---- ADJUST THESE ---- */
     --chatrd-bg-opacity: 0.75;
-    --chatrd-info-width: 110px;
+    --chatrd-info-width: 85px;
     --chatrd-bubble-radius: 8px;
     --chatrd-bubble-color: 14, 14, 18;
     --chatrd-event-color: 16, 16, 22;
@@ -104,7 +104,7 @@ body {
     display: grid !important;
     grid-template-columns: var(--chatrd-info-width) auto 1fr;
     align-items: start;
-    column-gap: 8px;
+    column-gap: 5px;
 }
 
 /* Platform dot = separator (column 2) — ALWAYS visible including mentions */
@@ -118,7 +118,7 @@ body {
     border-radius: 50% !important;
     align-self: start;
     justify-self: center;
-    margin-top: 8px;
+    margin-top: 7px;
     background: rgba(255,255,255,0.15);
     line-height: 0 !important;
     /* Reset any base CSS overrides */
