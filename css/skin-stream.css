@@ -428,7 +428,7 @@ body {
     outline: none !important;
     outline-offset: 0 !important;
     border-radius: var(--chatrd-bubble-radius) !important;
-    padding: 4px 8px !important;
+    padding: 4px 8px 4px 32px !important;
     min-height: 28px !important;
     line-height: 1.45 !important;
     position: relative;
@@ -471,6 +471,11 @@ body {
     overflow: hidden !important;
     flex-shrink: 0;
     border: none !important;
+    /* Pin to same position as chat avatars */
+    position: absolute !important;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #chat .event .info .avatar img {
