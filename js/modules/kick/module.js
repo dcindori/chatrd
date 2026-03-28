@@ -319,7 +319,7 @@ async function kickChatMessage(data) {
 
 
 
-    user.style.color = data.sender.identity.color;
+    user.parentElement.style.color = data.sender.identity.color;
     user.textContent = data.sender.username;
     message.innerHTML = messageHTML;
 
