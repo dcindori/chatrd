@@ -386,11 +386,21 @@ body {
     border: none !important;
     border-left: 2px solid var(--chatrd-mention-border) !important;
     border-radius: var(--chatrd-bubble-radius) !important;
+    padding-left: 30px !important;
 }
 
 /* Kill the default red overlay ::after */
 #chat .item.chat.streamer-mentioned .message::after {
     display: none !important;
+}
+
+/* Mention: override base position:relative on .info so avatar positions from .message */
+#chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .message .info {
+    position: static !important;
+}
+/* Mention avatar — compensate for 2px border-left */
+#chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .info .avatar {
+    left: 6px;
 }
 
 /* Platform mention tints */
@@ -428,7 +438,7 @@ body {
     outline: none !important;
     outline-offset: 0 !important;
     border-radius: var(--chatrd-bubble-radius) !important;
-    padding: 4px 8px 4px 32px !important;
+    padding: 4px 8px 4px 30px !important;
     min-height: 28px !important;
     line-height: 1.45 !important;
     position: relative;
@@ -444,11 +454,9 @@ body {
     flex-wrap: wrap !important;
 }
 
-/* Event platform dot */
+/* Event platform dot — hidden, avatar color shows platform */
 #chat .event .platform {
-    display: flex !important;
-    align-items: center !important;
-    height: auto !important;
+    display: none !important;
 }
 
 #chat .event img {
@@ -471,9 +479,9 @@ body {
     overflow: hidden !important;
     flex-shrink: 0;
     border: none !important;
-    /* Pin to same position as chat avatars */
+    /* Pin to same position as chat avatars (6px to compensate for 2px border-left) */
     position: absolute !important;
-    left: 8px;
+    left: 6px;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -552,7 +560,7 @@ body {
 }
 
 /* Subtle follow */
-#chat .event.follow .message { padding: 3px 8px !important; }
+#chat .event.follow .message { padding: 3px 8px 3px 30px !important; }
 
 /* TikTok join: invisible */
 #chat .event.tiktok.join .message {
