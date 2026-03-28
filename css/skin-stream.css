@@ -269,6 +269,12 @@ body {
     letter-spacing: -0.01em;
 }
 
+/* Force username color to match platform (overrides inline styles) */
+#chat .item.twitch  .user { color: var(--platform-twitch) !important; }
+#chat .item.youtube .user { color: var(--platform-youtube) !important; }
+#chat .item.tiktok  .user { color: var(--platform-tiktok) !important; }
+#chat .item.kick    .user { color: var(--platform-kick) !important; }
+
 
 /* ==================== */
 /*  TIMESTAMP           */
