@@ -151,19 +151,25 @@ body {
     transform: translateY(-50%);
 }
 
-/* Dot separator — uses currentColor to match username color */
+/* Dot separator */
 #chat:not(.horizontal):not(.oneline) .item .info::after {
     content: '' !important;
     width: 4px;
     height: 4px;
     min-width: 4px;
     border-radius: 50%;
-    background: currentColor;
-    opacity: 0.7;
+    background: rgba(255,255,255,0.10);
     flex-shrink: 0;
     order: 99;
+    /* Pull dot up to align with text baseline */
     align-self: center;
 }
+
+/* Platform-colored dots */
+#chat:not(.horizontal):not(.oneline) .item.twitch  .info::after { background: var(--platform-twitch); opacity: 0.7; }
+#chat:not(.horizontal):not(.oneline) .item.youtube .info::after { background: var(--platform-youtube); opacity: 0.7; }
+#chat:not(.horizontal):not(.oneline) .item.tiktok  .info::after { background: var(--platform-tiktok); opacity: 0.7; }
+#chat:not(.horizontal):not(.oneline) .item.kick    .info::after { background: var(--platform-kick); opacity: 0.7; }
 
 /* Element order — avatar removed from flow, rest stays */
 #chat:not(.horizontal):not(.oneline) .item .info .timestamp  { order: 0; flex-shrink: 0; }

@@ -215,7 +215,7 @@ async function tiktokChatMessage(data) {
 
     var color = await createRandomColor('tiktok', data.uniqueId);
 
-    user.parentElement.style.color = color;
+    user.style.color = color;
     user.textContent = data.uniqueId ? `@${data.uniqueId}` : data.nickname;
     
     message.textContent = data.comment;

@@ -172,9 +172,9 @@ function addMsg() {
     chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p}">
             <div class="message">
-                <div class="info" style="color:${c}">
+                <div class="info">
                     <span class="avatar"><img src="${svg(c)}"></span>
-                    <span class="user">${u}</span>
+                    <span class="user" style="color:${c}">${u}</span>
                 </div>
                 <div class="actual-message">${m}</div>
             </div>
@@ -187,9 +187,9 @@ function addLongMsg() {
     chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p}">
             <div class="message">
-                <div class="info" style="color:${c}">
+                <div class="info">
                     <span class="avatar"><img src="${svg(c)}"></span>
-                    <span class="user">${u}</span>
+                    <span class="user" style="color:${c}">${u}</span>
                 </div>
                 <div class="actual-message">${m}</div>
             </div>
@@ -203,9 +203,9 @@ function addMention() {
     chat.insertAdjacentHTML('afterbegin', `
         <div id="${i}" data-user="${u}" class="item chat ${p} streamer-mentioned">
             <div class="message">
-                <div class="info" style="color:${c}">
+                <div class="info">
                     <span class="avatar"><img src="${svg(c)}"></span>
-                    <span class="user">${u}</span>
+                    <span class="user" style="color:${c}">${u}</span>
                 </div>
                 <div class="actual-message">${mm}</div>
             </div>

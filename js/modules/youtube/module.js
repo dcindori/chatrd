@@ -148,7 +148,7 @@ async function youTubeChatMessage(data) {
 
     var color = await createRandomColor('youtube', data.user.name);
 
-    user.parentElement.style.color = color;
+    user.style.color = color;
     user.textContent = data.user.name;
 
     
