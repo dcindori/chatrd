@@ -170,6 +170,9 @@ body {
     text-align: right;
     max-width: 100%;
     min-width: 0;
+    /* Padding gives text-shadow room so overflow:hidden doesn't clip it into a box */
+    padding: 4px 2px;
+    margin: -4px -2px;
 }
 
 /* Message text: column 2 */
