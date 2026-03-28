@@ -1,0 +1,883 @@
+/* ================================================ */
+/*  ChatRD Skin: Stream 2.0 — Inspired by SE        */
+/*  Warm rounded bubbles with large avatars          */
+/* ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@500;600;700&family=Red+Hat+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+    /* ---- ADJUST THESE ---- */
+    --chatrd-bg-opacity: 0.55;           /* lower = more gameplay visible */
+    --chatrd-avatar-size: 42px;          /* profile pic circle diameter */
+    --chatrd-bubble-radius: 16px;
+    --chatrd-bubble-color: 20, 21, 29;   /* #14151d — dark blue-grey */
+    --chatrd-event-color: 20, 21, 29;
+
+    /* @mention */
+    --chatrd-mention-bg-opacity: 0.65;
+    --chatrd-mention-border: #ea6e8b;
+
+    /* Platform solid colors */
+    --platform-twitch: #9146ff;
+    --platform-youtube: #ff2d2d;
+    --platform-tiktok: #ff0050;
+    --platform-kick: #48d415;
+
+    /* Platform gradients — avatar backgrounds */
+    --grad-twitch:        linear-gradient(135deg, #7c3aed, #c4a1ff);
+    --grad-youtube:       linear-gradient(135deg, #ef4444, #fca5a5);
+    --grad-tiktok:        linear-gradient(135deg, #ec4899, #f9a8d4);
+    --grad-kick:          linear-gradient(135deg, #22c55e, #86efac);
+    --grad-streamelements: linear-gradient(135deg, #f59e42, #fcd34d);
+    --grad-streamlabs:    linear-gradient(135deg, #80f5d2, #34d399);
+    --grad-kofi:          linear-gradient(135deg, #29abe0, #7dd3fc);
+    --grad-patreon:       linear-gradient(135deg, #ff424d, #fb7185);
+    --grad-fourthwall:    linear-gradient(135deg, #6366f1, #a5b4fc);
+    --grad-tipeeestream:  linear-gradient(135deg, #49c5b6, #6ee7b7);
+
+    /* Text readability — warm shadow matching SE's dark UI */
+    --chatrd-text-glow: 1px 1px 3px rgba(20,21,29,0.9), 0 0 6px rgba(0,0,0,0.4);
+}
+
+
+/* ==================== */
+/*  FONTS               */
+/* ==================== */
+
+body {
+    font-family: "Red Hat Display", "DM Sans", system-ui, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ==================== */
+/*  TRANSPARENT BASE    */
+/* ==================== */
+
+#container .wrapper {
+    background: transparent !important;
+}
+
+
+/* ================================ */
+/*  TOP FADE MASK                   */
+/* ================================ */
+
+#chat {
+    padding: 6px 10px !important;
+    gap: 0 !important;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+}
+
+#chat::-webkit-scrollbar { width: 2px; }
+#chat::-webkit-scrollbar-track { background: transparent; }
+#chat::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.06); border-radius: 2px; }
+
+
+/* ====================================== */
+/*  CHAT MESSAGE — BASE                   */
+/* ====================================== */
+
+#chat .item {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    text-shadow: var(--chatrd-text-glow) !important;
+}
+
+/* Spacing between items */
+#chat:not(.horizontal):not(.oneline) .item {
+    margin-bottom: 6px !important;
+}
+
+
+/* ====================================== */
+/*  BUBBLE — dark rounded container        */
+/*  Avatar sits OUTSIDE, to the left       */
+/* ====================================== */
+
+#chat:not(.horizontal):not(.oneline) .item .message {
+    display: flex !important;
+    flex-direction: column !important;
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity)) !important;
+    border-radius: var(--chatrd-bubble-radius) !important;
+    padding: 8px 14px 8px calc(var(--chatrd-avatar-size) + 18px) !important;
+    border: none !important;
+    outline: none !important;
+    position: relative;
+    min-height: calc(var(--chatrd-avatar-size) + 4px);
+    transition: background 150ms ease;
+    box-sizing: border-box;
+}
+
+/* Kill base ::before */
+#chat:not(.horizontal):not(.oneline) .item .message::before {
+    content: none !important;
+    display: none !important;
+}
+
+/* No speech pointer — clean edge */
+#chat:not(.horizontal):not(.oneline) .item .message::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Hover — subtle brightness lift */
+#chat .item .message:hover {
+    background: rgba(var(--chatrd-bubble-color), calc(var(--chatrd-bg-opacity) + 0.06)) !important;
+}
+
+
+/* ====================================== */
+/*  AVATAR — large circle, gradient bg     */
+/* ====================================== */
+
+#chat .item .info .avatar {
+    width: var(--chatrd-avatar-size) !important;
+    height: var(--chatrd-avatar-size) !important;
+    min-width: var(--chatrd-avatar-size) !important;
+    min-height: var(--chatrd-avatar-size) !important;
+    border-radius: 50% !important;
+    border: none !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    /* Gradient bg shows when no image, or behind transparent SVG letters */
+    background: linear-gradient(135deg, #6366f1, #a78bfa);
+}
+
+#chat .item .info .avatar img {
+    height: var(--chatrd-avatar-size) !important;
+    width: var(--chatrd-avatar-size) !important;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+/* Pin avatar to left of bubble */
+#chat:not(.horizontal):not(.oneline) .item .info .avatar {
+    position: absolute !important;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Platform gradient backgrounds */
+#chat .item.twitch        .info .avatar { background: var(--grad-twitch); }
+#chat .item.youtube       .info .avatar { background: var(--grad-youtube); }
+#chat .item.tiktok        .info .avatar { background: var(--grad-tiktok); }
+#chat .item.kick          .info .avatar { background: var(--grad-kick); }
+
+/* Small platform-colored dot on avatar (bottom-right) */
+#chat:not(.horizontal):not(.oneline) .item .info .avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: calc(var(--chatrd-avatar-size) * 0.22);
+    height: calc(var(--chatrd-avatar-size) * 0.22);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    z-index: 2;
+}
+
+#chat:not(.horizontal):not(.oneline) .item.twitch  .info .avatar::after { background: var(--platform-twitch); }
+#chat:not(.horizontal):not(.oneline) .item.youtube .info .avatar::after { background: var(--platform-youtube); }
+#chat:not(.horizontal):not(.oneline) .item.tiktok  .info .avatar::after { background: var(--platform-tiktok); }
+#chat:not(.horizontal):not(.oneline) .item.kick    .info .avatar::after { background: var(--platform-kick); }
+
+
+/* ====================================== */
+/*  INFO SECTION — name + badges row       */
+/* ====================================== */
+
+#chat:not(.horizontal):not(.oneline) .item .info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 2px;
+    overflow: visible !important;
+    min-width: 0;
+}
+
+/* Element order */
+#chat:not(.horizontal):not(.oneline) .item .info .timestamp  { order: 0; flex-shrink: 0; }
+#chat:not(.horizontal):not(.oneline) .item .info .platform   { order: 1; flex-shrink: 0; display: none !important; }
+#chat:not(.horizontal):not(.oneline) .item .info .badges     { order: 2; flex-shrink: 0; display: flex !important; align-items: center; height: auto !important; }
+#chat:not(.horizontal):not(.oneline) .item .info .pronouns   { order: 3; flex-shrink: 0; }
+#chat:not(.horizontal):not(.oneline) .item .info .user {
+    order: 4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+    min-width: 0;
+}
+
+/* Full-width rows above name+message */
+#chat:not(.horizontal):not(.oneline) .item .first-message,
+#chat:not(.horizontal):not(.oneline) .item .shared-chat,
+#chat:not(.horizontal):not(.oneline) .item .header,
+#chat:not(.horizontal):not(.oneline) .item .reply {
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+
+/* ==================== */
+/*  USERNAME — Quicksand */
+/* ==================== */
+
+#chat .user {
+    font-family: "Quicksand", "Red Hat Display", sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    letter-spacing: 0.03em;
+    color: #fefefe !important;
+    text-shadow: 1px 1px 2px rgba(20,21,29,0.8), 1px 1px 3px rgba(20,21,29,0.6) !important;
+}
+
+
+/* ==================== */
+/*  MESSAGE TEXT         */
+/* ==================== */
+
+#chat:not(.horizontal):not(.oneline) .item .actual-message {
+    margin-top: 0 !important;
+    min-width: 0;
+    word-break: break-word;
+    color: rgba(255,255,255,0.92) !important;
+    font-family: "Inter", system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+}
+
+/* Emote images inside messages */
+#chat .item .actual-message img {
+    vertical-align: middle;
+    height: 26px !important;
+    margin: 0 2px !important;
+}
+
+/* Images shadow */
+#chat .item img {
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3)) !important;
+}
+
+
+/* ====================================== */
+/*  GROUPED MESSAGES — connected bubbles   */
+/* ====================================== */
+
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped {
+    margin-bottom: 2px !important;
+}
+
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message {
+    padding: 3px 14px 4px calc(var(--chatrd-avatar-size) + 18px) !important;
+    border-radius: 4px var(--chatrd-bubble-radius) var(--chatrd-bubble-radius) 4px !important;
+    min-height: unset !important;
+}
+
+/* Hide pointer on grouped */
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message::after {
+    display: none !important;
+}
+
+/* Hide avatar on grouped */
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .avatar {
+    visibility: hidden;
+}
+
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .message .actual-message {
+    margin: 0 !important;
+}
+
+
+/* ==================== */
+/*  PLATFORM DOTS       */
+/* ==================== */
+
+#chat .item .platform .hidden-platform {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+}
+
+#chat .item .platform .hidden-platform.twitch  { background: var(--platform-twitch) !important; }
+#chat .item .platform .hidden-platform.youtube { background: var(--platform-youtube) !important; }
+#chat .item .platform .hidden-platform.tiktok  { background: var(--platform-tiktok) !important; }
+#chat .item .platform .hidden-platform.kick    { background: var(--platform-kick) !important; }
+
+
+/* ==================== */
+/*  TIMESTAMP           */
+/* ==================== */
+
+#chat .item .timestamp {
+    background: rgba(255,255,255,0.05) !important;
+    padding: 1px 5px !important;
+    font-size: 9px !important;
+    border-radius: 3px !important;
+    font-weight: 600 !important;
+    color: rgba(255,255,255,0.25) !important;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ==================== */
+/*  PRONOUNS            */
+/* ==================== */
+
+#chat .item .pronouns {
+    background: rgba(255,255,255,0.05) !important;
+    padding: 1px 5px !important;
+    font-size: 8px !important;
+    border-radius: 3px !important;
+    color: rgba(255,255,255,0.25) !important;
+}
+
+
+/* ==================== */
+/*  BADGES — dark pill   */
+/* ==================== */
+
+#chat .item .badges {
+    height: auto !important;
+    background: rgba(20,21,29,0.5);
+    padding: 2px 6px;
+    border-radius: 20px;
+    display: inline-flex;
+    gap: 4px;
+}
+
+#chat .item .badges img {
+    height: 14px !important;
+    margin: 0 !important;
+}
+
+
+/* ==================== */
+/*  LINKS               */
+/* ==================== */
+
+#chat .item .message .actual-message a {
+    color: #93c5fd !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+
+/* ==================== */
+/*  REPLY               */
+/* ==================== */
+
+#chat .item .reply {
+    font-size: 10px !important;
+    color: rgba(255,255,255,0.3) !important;
+    padding: 3px 8px 3px 10px !important;
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid var(--chatrd-mention-border);
+    border-radius: 3px;
+}
+
+
+/* ==================== */
+/*  FIRST-TIME CHATTER  */
+/* ==================== */
+
+#chat .item.first-chatter .message {
+    background: rgba(var(--chatrd-bubble-color), calc(var(--chatrd-bg-opacity) + 0.05)) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    outline: none !important;
+}
+
+#chat .item .first-message {
+    font-size: 9px !important;
+    color: rgba(255,255,255,0.3) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+
+/* ==================== */
+/*  SHARED CHAT         */
+/* ==================== */
+
+#chat .item .shared-chat span.origin {
+    background: rgba(255,255,255,0.04) !important;
+    border-radius: 4px !important;
+    font-size: 9px !important;
+    padding: 1px 6px !important;
+}
+
+
+/* ==================== */
+/*  ANNOUNCEMENT        */
+/* ==================== */
+
+#chat .item.announcement .message {
+    outline: none !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+
+/* ============================================ */
+/*  @ MENTIONS — warm accent border              */
+/* ============================================ */
+
+#chat:not(.oneline):not(.horizontal) .item.chat.streamer-mentioned {
+    margin: 0 0 6px 0 !important;
+}
+
+#chat .item.chat.streamer-mentioned .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-mention-bg-opacity)) !important;
+    border: none !important;
+    border-left: 3px solid var(--chatrd-mention-border) !important;
+    border-radius: var(--chatrd-bubble-radius) !important;
+}
+
+/* Kill the default red overlay ::before and ::after */
+#chat .item.chat.streamer-mentioned .message::before,
+#chat .item.chat.streamer-mentioned .message::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Mention: position avatar relative to .message */
+#chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .message .info {
+    position: static !important;
+}
+
+/* Platform mention tints */
+#chat .item.twitch.chat.streamer-mentioned .message {
+    border-left-color: var(--platform-twitch) !important;
+}
+#chat .item.youtube.chat.streamer-mentioned .message {
+    border-left-color: var(--platform-youtube) !important;
+}
+#chat .item.tiktok.chat.streamer-mentioned .message {
+    border-left-color: var(--platform-tiktok) !important;
+}
+#chat .item.kick.chat.streamer-mentioned .message {
+    border-left-color: var(--platform-kick) !important;
+}
+
+
+/* ================================================= */
+/*  EVENTS: Subs, Gifts, Tips, Bits, Raids            */
+/* ================================================= */
+
+#chat .event {
+    margin: 0 0 6px 0 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    text-shadow: var(--chatrd-text-glow) !important;
+}
+
+#chat .event .message {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) !important;
+    border: none !important;
+    outline: none !important;
+    outline-offset: 0 !important;
+    border-radius: 50px !important;
+    padding: 8px 14px 8px calc(var(--chatrd-avatar-size) + 16px) !important;
+    min-height: calc(var(--chatrd-avatar-size) + 8px) !important;
+    line-height: 1.4 !important;
+    position: relative;
+    box-sizing: border-box !important;
+}
+
+#chat .event .info {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 4px 5px !important;
+    flex-wrap: wrap !important;
+    min-width: 0;
+}
+
+/* Event platform dot — hidden, avatar gradient shows platform */
+#chat .event .platform {
+    display: none !important;
+}
+
+#chat .event img {
+    height: 16px !important;
+    margin: 0 !important;
+}
+
+
+/* ---- Event avatar — gradient circle with icon ---- */
+
+#chat .event .info .avatar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: var(--chatrd-avatar-size) !important;
+    height: var(--chatrd-avatar-size) !important;
+    min-width: var(--chatrd-avatar-size) !important;
+    min-height: var(--chatrd-avatar-size) !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    border: none !important;
+    position: absolute !important;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#chat .event .info .avatar img {
+    width: var(--chatrd-avatar-size) !important;
+    height: var(--chatrd-avatar-size) !important;
+    object-fit: cover;
+}
+
+/* Empty avatar = platform gradient circle with FA icon */
+#chat .event .info .avatar:empty {
+    overflow: visible !important;
+}
+
+#chat .event.twitch         .info .avatar:empty { background: var(--grad-twitch); }
+#chat .event.youtube        .info .avatar:empty { background: var(--grad-youtube); }
+#chat .event.tiktok         .info .avatar:empty { background: var(--grad-tiktok); }
+#chat .event.kick           .info .avatar:empty { background: var(--grad-kick); }
+#chat .event.streamelements .info .avatar:empty { background: var(--grad-streamelements); }
+#chat .event.streamlabs     .info .avatar:empty { background: var(--grad-streamlabs); }
+#chat .event.kofi           .info .avatar:empty { background: var(--grad-kofi); }
+#chat .event.patreon        .info .avatar:empty { background: var(--grad-patreon); }
+#chat .event.fourthwall     .info .avatar:empty { background: var(--grad-fourthwall); }
+#chat .event.tipeeestream   .info .avatar:empty { background: var(--grad-tipeeestream); }
+
+/* Platform logos inside empty avatar circles */
+#chat .event .info .avatar:empty::before {
+    content: '' !important;
+    display: block;
+    width: 55%;
+    height: 55%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: brightness(0) invert(1) !important;
+    opacity: 0.9;
+    text-shadow: none !important;
+}
+
+#chat .event.twitch        .info .avatar:empty::before { background-image: url('../js/modules/twitch/images/logo-twitch.svg'); }
+#chat .event.youtube       .info .avatar:empty::before { background-image: url('../js/modules/youtube/images/logo-youtube.svg'); }
+#chat .event.tiktok        .info .avatar:empty::before { background-image: url('../js/modules/tiktok/images/logo-tiktok.svg'); }
+#chat .event.kick          .info .avatar:empty::before { background-image: url('../js/modules/kick/images/logo-kick.svg'); }
+#chat .event.streamelements .info .avatar:empty::before { background-image: url('../js/modules/streamelements/images/logo-streamelements.svg'); }
+#chat .event.streamlabs    .info .avatar:empty::before { background-image: url('../js/modules/streamlabs/images/logo-streamlabs.svg'); }
+#chat .event.kofi          .info .avatar:empty::before { background-image: url('../js/modules/kofi/images/logo-kofi.svg'); }
+#chat .event.patreon       .info .avatar:empty::before { background-image: url('../js/modules/patreon/images/logo-patreon.svg'); }
+#chat .event.fourthwall    .info .avatar:empty::before { background-image: url('../js/modules/fourthwall/images/logo-fourthwall.svg'); }
+#chat .event.tipeeestream  .info .avatar:empty::before { background-image: url('../js/modules/tipeeestream/images/logo-tipeeestream.svg'); }
+
+
+/* ---- Event text styling ---- */
+
+#chat .event .user {
+    font-weight: 700 !important;
+    color: #fefefe !important;
+    font-size: 14px !important;
+    font-family: "Quicksand", sans-serif !important;
+    letter-spacing: 0.03em;
+}
+#chat .event .action {
+    color: rgba(255,255,255,0.55) !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+
+#chat .event .value {
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    padding: 2px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* Value pills with platform gradients */
+#chat .event.twitch .value         { background: var(--grad-twitch); color: #fff !important; }
+#chat .event.youtube .value        { background: var(--grad-youtube); color: #fff !important; }
+#chat .event.tiktok .value         { background: var(--grad-tiktok); color: #fff !important; }
+#chat .event.kick .value           { background: var(--grad-kick); color: #fff !important; }
+#chat .event.streamelements .value { background: var(--grad-streamelements); color: #1a1a2e !important; }
+#chat .event.streamlabs .value     { background: var(--grad-streamlabs); color: #1a1a2e !important; }
+#chat .event.kofi .value           { background: var(--grad-kofi); color: #fff !important; }
+#chat .event.patreon .value        { background: var(--grad-patreon); color: #fff !important; }
+#chat .event.fourthwall .value     { background: var(--grad-fourthwall); color: #fff !important; }
+#chat .event.tipeeestream .value   { background: var(--grad-tipeeestream); color: #1a1a2e !important; }
+
+/* Follow events — no gradient pill, just subtle */
+#chat .event.follow .value {
+    background: none;
+    padding: 0;
+    color: rgba(255,255,255,0.35) !important;
+}
+
+#chat .event .actual-message {
+    line-height: 1.4 !important;
+    font-family: "Inter", system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 13px !important;
+}
+
+/* TikTok join: invisible */
+#chat .event.tiktok.join .message {
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+
+/* ---- Platform gradient border on events ---- */
+
+#container #chat .event.twitch .message {
+    background: linear-gradient(100deg, rgba(124,58,237,0.2) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid var(--platform-twitch) !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.youtube .message {
+    background: linear-gradient(100deg, rgba(239,68,68,0.16) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid var(--platform-youtube) !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.tiktok .message {
+    background: linear-gradient(100deg, rgba(236,72,153,0.16) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid var(--platform-tiktok) !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.kick .message {
+    background: linear-gradient(100deg, rgba(34,197,94,0.16) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid var(--platform-kick) !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.streamelements .message,
+#container #chat .event.streamlabs .message {
+    background: linear-gradient(100deg, rgba(245,158,66,0.16) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid #f59e42 !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.kofi .message {
+    background: linear-gradient(100deg, rgba(41,171,224,0.14) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid #29abe0 !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.patreon .message {
+    background: linear-gradient(100deg, rgba(255,66,77,0.14) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid #ff424d !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.fourthwall .message {
+    background: linear-gradient(100deg, rgba(99,102,241,0.14) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid #6366f1 !important;
+    border-radius: 50px !important;
+}
+#container #chat .event.tipeeestream .message {
+    background: linear-gradient(100deg, rgba(73,197,182,0.14) 0%, rgba(var(--chatrd-event-color), var(--chatrd-bg-opacity)) 50%) !important;
+    border-left: 3px solid #49c5b6 !important;
+    border-radius: var(--chatrd-bubble-radius) !important;
+}
+
+
+/* ========================================== */
+/*  TIKTOK GIFT                               */
+/* ========================================== */
+
+/* Override module animated gradient backgrounds */
+#container #chat .event.tiktok.gift[class*="bigger-than-"] .message,
+#container #chat .event.twitch.bits[class*="bigger-than-"] .message {
+    animation: none !important;
+    background-size: auto !important;
+}
+
+/* Gift info container */
+#chat .event.tiktok.gift .value .gift-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+#chat .event.tiktok.gift .info {
+    margin: 0 !important;
+}
+
+/* Gift image */
+#chat .event.tiktok.gift .value span.gift-image img {
+    height: 22px !important;
+    width: auto !important;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4)) !important;
+}
+
+#chat .event.tiktok.gift.small-gift .value span.gift-image img {
+    height: 18px !important;
+}
+
+/* Coin value pill */
+#chat .event.tiktok.gift .value span.gift-value {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    background: rgba(0,0,0,0.35) !important;
+    padding: 2px 8px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #fbbf24 !important;
+    line-height: 1.3 !important;
+}
+
+/* Coin icon */
+#chat .event.tiktok.gift .value span.gift-value img {
+    width: 11px !important;
+    height: 11px !important;
+    transform: none !important;
+    filter: none !important;
+    margin: 0 !important;
+}
+
+#chat .event.tiktok.gift .action strong {
+    color: #fff !important;
+}
+
+/* Override .value gradient pill for tiktok gifts specifically */
+#chat .event.tiktok.gift .value {
+    background: none !important;
+    padding: 0 !important;
+}
+
+
+/* ========================================== */
+/*  ANIMATIONS                                */
+/* ========================================== */
+
+@keyframes chatrdPopIn {
+    0%   { opacity: 0; transform: scale(0.5); }
+    60%  { transform: scale(1.03); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes chatrdSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eventSlideIn {
+    from { opacity: 0; transform: translateX(-12px) scale(0.95); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+#chat .event {
+    animation: eventSlideIn 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+
+/* ========================================== */
+/*  BIG EVENTS — warm glow                    */
+/* ========================================== */
+
+#chat .event[class*="bigger-than-1000"] .message,
+#chat .item[class*="bigger-than-1000"] .message {
+    box-shadow: 0 0 12px rgba(251,191,36,0.08);
+}
+
+#chat .event[class*="bigger-than-5000"] .message,
+#chat .item[class*="bigger-than-5000"] .message {
+    box-shadow: 0 0 16px rgba(251,191,36,0.12);
+}
+
+#chat .event[class*="bigger-than-10000"] .message,
+#chat .item[class*="bigger-than-10000"] .message {
+    box-shadow: 0 0 20px rgba(251,191,36,0.16);
+}
+
+#chat .event[class*="bigger-than-50000"] .message,
+#chat .item[class*="bigger-than-50000"] .message {
+    box-shadow: 0 0 24px rgba(251,191,36,0.2);
+}
+
+
+/* ==================== */
+/*  STATISTICS BAR      */
+/* ==================== */
+
+#statistics .platform {
+    background: rgba(var(--chatrd-bubble-color), 0.5) !important;
+    border: 1px solid rgba(255,255,255,0.04) !important;
+    border-radius: 20px !important;
+    padding: 4px 10px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    font-size: 10px !important;
+}
+
+
+/* ==================== */
+/*  CHAT INPUT          */
+/* ==================== */
+
+#chat-input input[type=text] {
+    background: rgba(var(--chatrd-bubble-color), 0.6) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 20px !important;
+    font-family: "Red Hat Display", sans-serif !important;
+}
+#chat-input input[type=text]:focus {
+    border-color: rgba(255,255,255,0.12) !important;
+}
+
+
+/* ==================== */
+/*  MODERATION          */
+/* ==================== */
+
+.item.chat .chatmoderation button {
+    background: rgba(0,0,0,0.4) !important;
+    border-radius: 6px !important;
+}
+
+
+/* ====================================== */
+/*  ONE-LINE LAYOUT                       */
+/* ====================================== */
+
+#chat.oneline .item .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity)) !important;
+    border: none !important;
+    border-radius: 20px !important;
+}
+#chat.oneline .item:not(.grouped) .message { padding: 4px 12px !important; }
+#chat.oneline .item.grouped .message { padding: 2px 12px !important; }
+#chat.oneline .item { margin-bottom: 2px !important; }
+#chat.oneline .user {
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: 700 !important;
+}
+
+
+/* ====================================== */
+/*  HORIZONTAL LAYOUT                     */
+/* ====================================== */
+
+#chat.horizontal .item .message {
+    background: rgba(var(--chatrd-bubble-color), var(--chatrd-bg-opacity)) !important;
+    border: none !important;
+    border-radius: 16px !important;
+}
+#chat.horizontal .user {
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: 700 !important;
+}

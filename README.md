@@ -4,6 +4,17 @@ Multi-platform stream chat overlay combining **Twitch**, **YouTube**, **TikTok**
 
 Forked from [VortisRD/chatrd](https://github.com/VortisRD/chatrd) with custom Stream skin and external skin URL support.
 
+## Stream Skin Variants
+
+Two Stream skin designs are available via the `chatrdSkin` URL parameter:
+
+| `chatrdSkin=` | Skin | Description |
+|---------------|------|-------------|
+| `default` | **Stream (Grid)** | Compact grid layout — username column + message column, small avatars, platform-colored names |
+| `stream-bubbles` | **Stream (Bubbles)** | SE-inspired bubble layout — large avatars with gradient backgrounds, Quicksand/Inter fonts, dark rounded bubbles, pill-shaped events |
+
+To switch, just change `chatrdSkin=default` to `chatrdSkin=stream-bubbles` in your OBS browser source URL (or vice versa).
+
 ## Settings
 
 Open the [Settings Page](https://dcindori.github.io/chatrd) to configure your overlay, then click **"Copy URL"** to get the browser source URL.

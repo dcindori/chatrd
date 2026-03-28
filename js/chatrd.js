@@ -46,7 +46,8 @@ const SKINS = {
     nutting: "skin-nutting.css",
     kimballs: "skin-kimballs.css",
     bubbles: "skin-bubbles.css",
-    stream: "skin-stream.css"
+    stream: "skin-stream.css",
+    "stream-bubbles": "skin-stream-bubbles.css"
 };
 
 const skinLink = document.getElementById("chatrd-skins");
