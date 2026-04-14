@@ -215,6 +215,31 @@ async function twitchChatMessage(data) {
 
     if (data.user.role == 4) { classes.push('streamer'); }
 
+    const badgeNames = (data.message.badges || [])
+        .map(b => (b.name || b.type || b.slug || '').toLowerCase());
+    const hasBadge = (...names) => names.some(n => badgeNames.some(b => b === n || b.includes(n)));
+    // Subscriber family
+    if (hasBadge('subscriber'))      classes.push('role-sub');
+    if (hasBadge('founder'))         classes.push('role-founder');
+    // Role badges
+    if (hasBadge('vip'))             classes.push('role-vip');
+    if (hasBadge('moderator'))       classes.push('role-mod');
+    if (hasBadge('lead_moderator', 'lead-moderator', 'leadmod'))
+                                     classes.push('role-lead-mod');
+    if (hasBadge('artist'))          classes.push('role-artist');
+    if (hasBadge('partner'))         classes.push('role-partner');
+    if (hasBadge('verified'))        classes.push('role-verified');
+    // Global/staff badges
+    if (hasBadge('staff'))           classes.push('role-staff');
+    if (hasBadge('admin'))           classes.push('role-admin');
+    if (hasBadge('global_mod', 'global-mod')) classes.push('role-global-mod');
+    // Loyalty / perk badges
+    if (hasBadge('premium'))         classes.push('role-prime');
+    if (hasBadge('turbo'))           classes.push('role-turbo');
+    // Event badges
+    if (hasBadge('hype-train'))      classes.push('role-hype');
+    if (hasBadge('bits-leader'))     classes.push('role-bits-leader');
+
     if (data.message.firstMessage) {
         classes.push('first-chatter');
     }

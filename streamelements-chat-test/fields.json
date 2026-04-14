@@ -1,0 +1,726 @@
+{
+    "editsMode1": {
+        "label": "Turn it off after edits are made",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "hidden"
+    },
+    "editsMode": {
+        "label": "Tick for instant messages preview for edits",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "checkbox"
+    },
+    "testtestMessage": {
+        "label": "Send test broadcaster message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageLong": {
+        "label": "Send long message (as viewer)",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageVip": {
+        "label": "Send test VIP message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageSub": {
+        "label": "Send test subscriber message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageMod": {
+        "label": "Send test Mod message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageFirst": {
+        "label": "Send test emotes message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testMessageArtist": {
+        "label": "Send test artist message",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testSubEvent": {
+        "label": "Test subscription event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testSubGiftEvent": {
+        "label": "Test sub gift event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testFollowEvent": {
+        "label": "Test Follow event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testCheerEvent": {
+        "label": "Test Cheer event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testTipEvent": {
+        "label": "Test Tip event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "testRaidEvent": {
+        "label": "Test Raid event",
+        "group": "💬 | Test messages (hide preview here)",
+        "type": "button"
+    },
+    "authorMeHehehe": {
+        "label": "Made by @milaeshop | twitter",
+        "type": "hidden",
+        "group": "⚙️ | Messages settings"
+    },
+    "authorMeHehehe2": {
+        "label": " ",
+        "type": "hidden",
+        "group": "⚙️ | Messages settings"
+    },
+    "msgAlign": {
+        "label": "Align Messages",
+        "type": "dropdown",
+        "value": "bottom",
+        "options": {
+            "end": "Bottom",
+            "start": "Top"
+        },
+        "group": "⚙️ | Messages settings"
+    },
+    "msgAlignX": {
+        "label": "Align Messages to:",
+        "type": "dropdown",
+        "value": "bottom",
+        "options": {
+            "LeftAlign": "Left",
+            "RightAlign": "Right",
+            "ModsRight": "Mods on the right"
+        },
+        "group": "⚙️ | Messages settings"
+    },
+    "anim": {
+        "label": "Appearance animation option",
+        "type": "dropdown",
+        "value": "bottom",
+        "options": {
+            "slideup": "Slide up",
+            "fadein": "Fade in",
+            "slideSide": "Slide from side",
+            "popup": "Scale up",
+            "noAnim": "None"
+        },
+        "group": "⚙️ | Messages settings"
+    },
+    "minimizeAnim": {
+        "type": "dropdown",
+        "label": "Minimize elements animations",
+        "group": "⚙️ | Messages settings",
+        "options": {
+            "minimalan": "Yes",
+            "fullanim": "No"
+        }
+    },
+    "smooth": {
+        "label": "Smooth scroll",
+        "group": "⚙️ | Messages settings",
+        "type": "checkbox"
+    },
+    "userTyping": {
+        "label": "'User is typing' display",
+        "type": "dropdown",
+        "value": "bottom",
+        "options": {
+            "outMsg": "Typing dots below",
+            "showMsg": "Show 'user is typing'",
+            "none": "None"
+        },
+        "group": "⚙️ | Messages settings"
+    },
+    "msgFade": {
+        "label": "Old messages fading (mask)",
+        "group": "⚙️ | Messages settings",
+        "type": "checkbox"
+    },
+    "msgconnect": {
+        "label": "Connect messages from the same user",
+        "type": "checkbox",
+        "group": "⚙️ | Messages settings",
+        "value": false
+    },
+    "msgHideOpt": {
+        "label": "Hide message after some time",
+        "type": "checkbox",
+        "group": "⚙️ | Messages settings",
+        "value": false
+    },
+    "msgHide": {
+        "type": "number",
+        "label": "Messages hide time in seconds",
+        "value": 7,
+        "step": 1,
+        "group": "⚙️ | Messages settings"
+    },
+    "msgLimit": {
+        "label": "Messages limit",
+        "group": "⚙️ | Messages settings",
+        "type": "checkbox"
+    },
+    "msgLimitAmount": {
+        "type": "number",
+        "label": "Messages limit amount",
+        "value": 7,
+        "step": 1,
+        "group": "⚙️ | Messages settings"
+    },
+    "linesamount": {
+        "type": "number",
+        "label": "Messages lines limit (for long text)",
+        "value": 7,
+        "step": 1,
+        "group": "⚙️ | Messages settings"
+    },
+    "largeEmotes": {
+        "label": "Large emotes on",
+        "type": "dropdown",
+        "value": "on",
+        "options": {
+            "on": "On",
+            "off": "Off"
+        },
+        "group": "⚙️ | Messages settings"
+    },
+    "stickerEmote": {
+        "label": "Single emotes as stickers",
+        "type": "checkbox",
+        "value": true,
+        "group": "⚙️ | Messages settings"
+    },
+    "stickerEmoteSize": {
+        "label": "Stickers size",
+        "type": "slider",
+        "value": 1,
+        "max": 120,
+        "min": 75,
+        "step": 1,
+        "group": "⚙️ | Messages settings"
+    },
+    "addFrame": {
+        "label": "Show frame",
+        "type": "checkbox",
+        "value": true,
+        "group": "🎨 | Chat frame"
+    },
+    "framecol": {
+        "type": "colorpicker",
+        "label": "Frame background color 1",
+        "group": "🎨 | Chat frame"
+    },
+    "framecol2": {
+        "type": "colorpicker",
+        "label": "Frame background color 2",
+        "group": "🎨 | Chat frame"
+    },
+    "framecolh": {
+        "type": "colorpicker",
+        "label": "Frame header color 1",
+        "group": "🎨 | Chat frame"
+    },
+    "framecolh2": {
+        "type": "colorpicker",
+        "label": "Frame header color 2",
+        "group": "🎨 | Chat frame"
+    },
+    "framecolh24": {
+        "type": "colorpicker",
+        "label": "Frame dots color 2",
+        "group": "🎨 | Chat frame"
+    },
+    "pronounsOn": {
+        "label": "Pronouns on",
+        "type": "checkbox",
+        "value": true,
+        "group": "⚙️ | Messages settings"
+    },
+    "badgesDisplay": {
+        "label": "Show badges",
+        "type": "checkbox",
+        "value": true,
+        "group": "⚙️ | Messages settings"
+    },
+    "liveDisplay": {
+        "label": "Replace streamer badge with 'LIVE'",
+        "type": "checkbox",
+        "value": true,
+        "group": "⚙️ | Messages settings"
+    },
+    "hideDots": {
+        "label": "Hide avatar dots",
+        "type": "checkbox",
+        "value": true,
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "badgescol": {
+        "type": "colorpicker",
+        "label": "Badges color",
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "badgescolbg": {
+        "type": "colorpicker",
+        "label": "Badges background color",
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "accentColorMode": {
+        "type": "dropdown",
+        "label": "Accent Color Mode",
+        "group": "🎨 | Colors · Styling · Customization",
+        "options": {
+            "TwitchCol": "Twitch chat color",
+            "custom": "Select accent colors below"
+        }
+    },
+    "modcolor": {
+        "type": "colorpicker",
+        "label": "Moderator accent color",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#8D77FF"
+    },
+    "subscribercolor": {
+        "type": "colorpicker",
+        "label": "Sub accent color",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#36B2E7"
+    },
+    "vipcolor": {
+        "type": "colorpicker",
+        "label": "VIP accent color",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#FF9E8D"
+    },
+    "defaultcolor": {
+        "type": "colorpicker",
+        "label": "Default accent colo1",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#7785FF"
+    },
+    "eventscolor": {
+        "type": "colorpicker",
+        "label": "Events accent color 1",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#8D77FF"
+    },
+    "eventscolor2": {
+        "type": "colorpicker",
+        "label": "Events accent color 2",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#C385FF"
+    },
+    "msgbgevents": {
+        "type": "colorpicker",
+        "label": "Events background color",
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "repliesOn": {
+        "type": "checkbox",
+        "label": "Show replies",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": true
+    },
+    "replycol": {
+        "type": "colorpicker",
+        "label": "Replies color",
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "msgbg": {
+        "type": "colorpicker",
+        "label": "Message background color",
+        "group": "🎨 | Colors · Styling · Customization"
+    },
+    "modcolorbg": {
+        "type": "colorpicker",
+        "label": "Mod messages background 1",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#8D77FF"
+    },
+    "modcolorbg2": {
+        "type": "colorpicker",
+        "label": "Mod messages background 2",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": "#8D77FF"
+    },
+    "msgOff": {
+        "type": "checkbox",
+        "label": "No message background",
+        "group": "🎨 | Colors · Styling · Customization",
+        "value": true
+    },
+    "alcol": {
+        "type": "colorpicker",
+        "label": "Events text color",
+        "group": "✏️ | Text settings"
+    },
+    "gradNames": {
+        "type": "checkbox",
+        "label": "Events names gradient",
+        "group": "✏️ | Text settings",
+        "value": true
+    },
+    "amountCol": {
+        "type": "colorpicker",
+        "label": "Events amount color",
+        "group": "✏️ | Text settings"
+    },
+    "alcolfol": {
+        "type": "colorpicker",
+        "label": "Follower event text color",
+        "group": "✏️ | Text settings"
+    },
+    "msgtext": {
+        "label": "Message text color",
+        "type": "colorpicker",
+        "value": "#fff",
+        "group": "✏️ | Text settings"
+    },
+    "msgtextMOD": {
+        "label": "Moderator message text color",
+        "type": "colorpicker",
+        "value": "#fff",
+        "group": "✏️ | Text settings"
+    },
+    "namescol": {
+        "label": "Names color",
+        "type": "colorpicker",
+        "value": "#9883a8",
+        "group": "✏️ | Text settings"
+    },
+    "namesShadow": {
+        "type": "checkbox",
+        "label": "Shadow on names",
+        "group": "✏️ | Text settings",
+        "value": true
+    },
+    "pfptype": {
+        "type": "dropdown",
+        "label": "Messages avatar type",
+        "group": "👤 | Avatars settings",
+        "options": {
+            "init": "Initial letter",
+            "pfpTwitch": "Twitch profile picture",
+            "icon": "Role icon",
+            "upload": "Upload images for avatars (below)",
+            "nopfp": "No avatar"
+        }
+    },
+    "pfp-subonly": {
+        "type": "checkbox",
+        "label": "Hide twitch pfps for non-role users",
+        "group": "👤 | Avatars settings",
+        "value": true
+    },
+    "iconscol": {
+        "type": "colorpicker",
+        "label": "Icons color",
+        "group": "👤 | Avatars settings"
+    },
+    "useAccentforIcon": {
+        "type": "checkbox",
+        "label": "Use accent color for icon / initial (matches with 'Avatar background type' - 'Custom color background')",
+        "group": "👤 | Avatars settings",
+        "value": true
+    },
+    "eventpfptype": {
+        "type": "dropdown",
+        "label": "Events avatar type",
+        "group": "👤 | Avatars settings",
+        "options": {
+            "init": "Initial letter",
+            "icon": "Event icon",
+            "upload": "Upload image for event avatar (below)"
+        }
+    },
+    "alerticonscol": {
+        "type": "colorpicker",
+        "label": "Events icon color",
+        "group": "👤 | Avatars settings"
+    },
+    "pfpsize": {
+        "type": "slider",
+        "label": "Avatar box size",
+        "group": "👤 | Avatars settings",
+        "min": 50,
+        "max": 100,
+        "value": 61
+    },
+    "pfpBg": {
+        "type": "dropdown",
+        "label": "Avatar background type",
+        "group": "👤 | Avatars settings",
+        "options": {
+            "gradBG": "Accent colors gradient",
+            "noGrad": "Custom color (select below)"
+        }
+    },
+    "iconsBGcol": {
+        "type": "colorpicker",
+        "label": "Avatar background color",
+        "group": "👤 | Avatars settings"
+    },
+    "modpfp0": {
+        "type": "hidden",
+        "label": "If image is not uploaded",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "modpfp1": {
+        "type": "hidden",
+        "label": "role icon will be used",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "pfpsize2": {
+        "type": "slider",
+        "label": "Avatar image size",
+        "group": "🖼️ | Avatar images upload",
+        "min": 30,
+        "max": 100,
+        "value": 61
+    },
+    "streamerpfp": {
+        "type": "image-input",
+        "label": "Streamer avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "modpfp": {
+        "type": "image-input",
+        "label": "Moderator avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "subpfp": {
+        "type": "image-input",
+        "label": "Subscriber avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "vippfp": {
+        "type": "image-input",
+        "label": "Vip user avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "defaultpfp": {
+        "type": "image-input",
+        "label": "No role users avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "eventpfp": {
+        "type": "image-input",
+        "label": "Events avatar",
+        "group": "🖼️ | Avatar images upload"
+    },
+    "msgFont": {
+        "label": "Text font",
+        "type": "googleFont",
+        "value": "Poppins",
+        "group": "✏️ | Text settings"
+    },
+    "namesBold": {
+        "label": "Names font weight",
+        "type": "dropdown",
+        "options": {
+            "300": "Thin",
+            "400": "Regular",
+            "500": "Medium",
+            "600": "Semibold",
+            "700": "Bold",
+            "800": "Extra Bold",
+            "900": "Black"
+        },
+        "value": "400",
+        "group": "✏️ | Text settings"
+    },
+    "msgBold": {
+        "label": "Message font weight",
+        "type": "dropdown",
+        "options": {
+            "300": "Thin",
+            "400": "Regular",
+            "500": "Medium",
+            "600": "Semibold",
+            "700": "Bold",
+            "800": "Extra Bold",
+            "900": "Black"
+        },
+        "value": "400",
+        "group": "✏️ | Text settings"
+    },
+    "alBold": {
+        "label": "Events font weight",
+        "type": "dropdown",
+        "options": {
+            "300": "Thin",
+            "400": "Regular",
+            "500": "Medium",
+            "600": "Semibold",
+            "700": "Bold",
+            "800": "Extra Bold",
+            "900": "Black"
+        },
+        "value": "400",
+        "group": "✏️ | Text settings"
+    },
+    "msgSize": {
+        "type": "number",
+        "label": "Messages font size",
+        "value": 18,
+        "steps": 1,
+        "group": "✏️ | Text settings"
+    },
+    "namesSize": {
+        "type": "number",
+        "label": "Names font size",
+        "value": 18,
+        "step": 1,
+        "group": "✏️ | Text settings"
+    },
+    "alSize": {
+        "type": "number",
+        "label": "Events font size",
+        "value": 18,
+        "step": 1,
+        "group": "✏️ | Text settings"
+    },
+    "upper": {
+        "label": "Names upprecase",
+        "type": "dropdown",
+        "value": "uppercase",
+        "options": {
+            "uppercase": "Yes",
+            "none": "No"
+        },
+        "group": "✏️ | Text settings"
+    },
+    "maxials": {
+        "type": "dropdown",
+        "label": "Maxi format for cheers&tips",
+        "group": "🎉 | Event messages",
+        "options": {
+            "maxials": "Maxi format ON",
+            "minals": "Maxi format OFF"
+        }
+    },
+    "maxiFontSize": {
+        "label": "Maxi format font size",
+        "type": "number",
+        "group": "🎉 | Event messages",
+        "value": 50
+    },
+    "raidMessage": {
+        "type": "text",
+        "label": "Raid text",
+        "group": "🎉 | Event messages"
+    },
+    "followMessage": {
+        "type": "text",
+        "label": "Follow text",
+        "group": "🎉 | Event messages"
+    },
+    "tipMessage": {
+        "type": "text",
+        "label": "Tip text",
+        "group": "🎉 | Event messages"
+    },
+    "cheerMessage": {
+        "type": "text",
+        "label": "Cheer text",
+        "group": "🎉 | Event messages"
+    },
+    "subgiftMessage": {
+        "type": "text",
+        "label": "Sub gift text",
+        "group": "🎉 | Event messages"
+    },
+    "subscriberMessage": {
+        "type": "text",
+        "label": "Subscriber (first time) text",
+        "group": "🎉 | Event messages"
+    },
+    "resubsriberMessage": {
+        "type": "text",
+        "label": "Resubscriber text",
+        "group": "🎉 | Event messages"
+    },
+    "alertson": {
+        "type": "checkbox",
+        "label": "Enable events",
+        "value": true,
+        "group": "🎉 | Event messages"
+    },
+    "text5": {
+        "label": "-- If alerts on --",
+        "group": "🎉 | Event messages",
+        "type": "hidden"
+    },
+    "text51": {
+        "label": " ",
+        "group": "🎉 | Event messages",
+        "type": "hidden"
+    },
+    "alertsfollower": {
+        "type": "checkbox",
+        "label": "Enable events for followers",
+        "value": false,
+        "group": "🎉 | Event messages"
+    },
+    "alertssub": {
+        "type": "checkbox",
+        "label": "Enable events for subscribers",
+        "value": true,
+        "group": "🎉 | Event messages"
+    },
+    "alertsdonation": {
+        "type": "checkbox",
+        "label": "Enable events for donations",
+        "value": true,
+        "group": "🎉 | Event messages"
+    },
+    "alertsbits": {
+        "type": "checkbox",
+        "label": "Enable events for cheers",
+        "value": true,
+        "group": "🎉 | Event messages"
+    },
+    "alertsraids": {
+        "type": "checkbox",
+        "label": "Enable events for raids",
+        "value": true,
+        "group": "🎉 | Event messages"
+    },
+    "text52": {
+        "label": "-- Test events with EMULATE --",
+        "group": "🎉 | Event messages",
+        "type": "hidden"
+    },
+    "text54": {
+        "label": " ",
+        "group": "🎉 | Event messages",
+        "type": "hidden"
+    },
+    "hideCommands": {
+        "label": "Hide messages with ! (commands)",
+        "type": "dropdown",
+        "value": "yes",
+        "options": {
+            "yes": "Yes",
+            "no": "No"
+        },
+        "group": "Settings"
+    },
+    "ignoredUsers": {
+        "label": "Ignored users (comma separated)",
+        "type": "text",
+        "value": "StreamElements,OtherBot",
+        "group": "Settings"
+    }
+}

@@ -1,0 +1,1274 @@
+/* =========================================================
+   ChatRD — Modern two-column chat (v2)
+   Layout : [ username (right-aligned) ] [ platform tile ] | [ message ]
+   Design anchors
+   - Platform tile sits BETWEEN username and message as a soft divider
+   - One pill token for every value (bits, tier, months, viewers, donation, coin)
+   - Events are flex-row (one line), message flows to its own row only
+   - Emotes get white sticker outline + subtle pop-in
+   - Flashy ambient animations on events (shimmer + pulse) — flashy but legible
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+    /* ---------- LAYOUT ---------- */
+    --chatrd-user-col:   132px;  /* right-aligned user lane */
+    --chatrd-tile:       16px;   /* platform tile divider   */
+    --chatrd-gap:        8px;    /* lane gap                */
+    --chatrd-row-gap:    2px;
+    --chatrd-radius-sm:  4px;
+    --chatrd-radius-md:  8px;
+    --chatrd-radius-lg:  12px;
+    --chatrd-radius-pill: 999px;
+
+    /* ---------- PLATFORM PALETTE ---------- */
+    --p-twitch:  #9146ff;
+    --p-youtube: #ff0033;
+    --p-tiktok:  #ff0050;
+    --p-kick:    #53fc18;
+
+    /* ---------- ROLE ACCENTS (Twitch-matched) ---------- */
+    --role-streamer:    #e91916;  /* Broadcaster — Twitch red */
+    --role-mod:         #00ad03;  /* Moderator — Twitch green */
+    --role-vip:         #e005b9;  /* VIP — pink */
+    --role-artist:      #ff7f50;  /* Artist — coral */
+    --role-sub:         #8205b3;  /* Subscriber — Twitch purple */
+    --role-founder:     #ffad03;  /* Founder — amber (top-sub halo) */
+    --role-partner:     #9146ff;  /* Partner — Twitch purple */
+    --role-verified:    #1f8ec4;  /* Verified — Twitch blue */
+    --role-staff:       #989898;  /* Staff — grey */
+    --role-admin:       #faaf19;  /* Admin — amber */
+    --role-global-mod:  #0e6a04;  /* Global Mod — deep green */
+    --role-prime:       #00adee;  /* Prime — cyan */
+    --role-turbo:       #59399a;  /* Turbo — deep purple */
+    --role-hype:        #ff5a1f;  /* Hype Train — orange */
+    --role-bits-leader: #ffbf00;  /* Bits leader — gold */
+
+    /* ---------- TYPOGRAPHY ---------- */
+    --chatrd-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --chatrd-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --chatrd-size-chat:  14px;
+    --chatrd-size-user:  13px;
+    --chatrd-size-meta:  10px;
+    --chatrd-size-event: 14px;
+    --chatrd-size-pill:  11px;
+    --chatrd-line:       1.42;
+    --chatrd-tracking:  -0.006em;
+
+    /* ---------- FG / SURFACE ---------- */
+    --fg-primary:   #f5f5f7;
+    --fg-muted:     rgba(245,245,247,0.68);
+    --fg-dim:       rgba(245,245,247,0.38);
+    --surface-0:    rgba(10,10,14, 0.55);
+    --surface-1:    rgba(16,16,22, 0.72);
+    --surface-2:    rgba(20,20,28, 0.82);
+    --bg-opacity:   0.55;
+
+    /* ---------- READABILITY ---------- */
+    /* Tight shadow — legible on light + dark scenes without heavy halo */
+    --glow-text:   0 1px 1px rgba(0,0,0,0.55), 0 0 2px rgba(0,0,0,0.45);
+    --glow-stroke: -0.3px -0.3px 0 rgba(0,0,0,0.55), 0.3px -0.3px 0 rgba(0,0,0,0.55), -0.3px 0.3px 0 rgba(0,0,0,0.55), 0.3px 0.3px 0 rgba(0,0,0,0.55);
+    --ring:        0 0 0 1px rgba(255,255,255,0.08);
+    --shadow-sm:   0 1px 2px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    --shadow-md:   0 4px 14px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06) inset;
+
+    /* ---------- MOTION ---------- */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+body {
+    font-family: var(--chatrd-font) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11','ss01','ss03';
+    letter-spacing: var(--chatrd-tracking);
+}
+
+#container .wrapper { background: transparent !important; position: relative; }
+
+#chat {
+    padding: 6px 6px 10px !important;
+    gap: 0 !important;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
+}
+#chat::-webkit-scrollbar { width: 3px; }
+#chat::-webkit-scrollbar-track { background: transparent; }
+#chat::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.10); border-radius: 3px; }
+
+
+/* =========================================================
+   CHAT ROW
+   3-col grid: [ user (right) ] [ tile ] [ message ]
+   ========================================================= */
+
+#chat .item {
+    font-size: var(--chatrd-size-chat) !important;
+    line-height: var(--chatrd-line) !important;
+    color: var(--fg-primary) !important;
+    text-shadow: var(--glow-text) !important;
+}
+
+#chat:not(.horizontal):not(.oneline) .item {
+    margin-bottom: var(--chatrd-row-gap) !important;
+}
+
+#chat .item .message {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 2px 4px !important;
+    border-radius: var(--chatrd-radius-sm) !important;
+    transition: background 180ms var(--ease-out);
+}
+
+#chat:not(.horizontal):not(.oneline) .item .message {
+    display: grid !important;
+    grid-template-columns: var(--chatrd-user-col) var(--chatrd-tile) 1fr;
+    column-gap: var(--chatrd-gap);
+    align-items: baseline;      /* baselines share across columns */
+    position: relative;
+    max-width: 100%;
+}
+
+/* Kill pseudo separators from other skins */
+#chat:not(.horizontal):not(.oneline) .item .message::before,
+#chat:not(.horizontal):not(.oneline) .item .message::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Full-width auxiliary rows */
+#chat:not(.horizontal):not(.oneline) .item .first-message,
+#chat:not(.horizontal):not(.oneline) .item .shared-chat,
+#chat:not(.horizontal):not(.oneline) .item .header,
+#chat:not(.horizontal):not(.oneline) .item .reply {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+}
+
+/* Hide empty auxiliary + avatar slots so they don't leave ghost boxes */
+#chat .item .first-message:empty,
+#chat .item .shared-chat:empty,
+#chat .item .header:empty,
+#chat .item .reply:empty,
+#chat .item .info .pronouns:empty,
+#chat .item .info .badges:empty,
+#chat .item .info .timestamp:empty { display: none !important; }
+#chat .item.chat .avatar,
+#chat .item.chat .avatar:empty { display: none !important; }
+
+
+/* =========================================================
+   INFO COLUMN — col 1 (username + meta, right-aligned)
+   Tile lives separately in col 2 via .platform pulled out of .info.
+   ========================================================= */
+
+#chat:not(.horizontal):not(.oneline) .item.chat .info .avatar { display: none !important; }
+
+#chat:not(.horizontal):not(.oneline) .item .info {
+    grid-column: 1;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 5px !important;
+    min-width: 0;
+    overflow: visible !important;
+    flex-wrap: nowrap !important;
+    padding-top: 2px;
+    padding-right: 2px;           /* breathing room for role glow */
+    position: relative !important;  /* containing block for absolute .platform */
+}
+
+/* Ordering inside info flex */
+#chat .item .info .timestamp { order: 0; flex-shrink: 0; }
+#chat .item .info .pronouns  { order: 1; flex-shrink: 0; }
+#chat .item .info .badges    { order: 2; flex-shrink: 0; display: flex !important; align-items: center; gap: 2px; }
+
+/* Platform tile — absolutely positioned just past the right edge of .info,
+   which places it in grid col 2 regardless of transform-induced containing blocks. */
+#chat:not(.horizontal):not(.oneline) .item .info .platform {
+    position: absolute !important;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: var(--chatrd-gap);
+    width: var(--chatrd-tile);
+    height: var(--chatrd-tile);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+/* Platform tile content */
+#chat .item .info .platform img { display: none !important; }
+#chat .item .info .platform .hidden-platform {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    position: relative;
+}
+#chat .item.twitch  .info .platform .hidden-platform { background: var(--p-twitch)  !important; }
+#chat .item.youtube .info .platform .hidden-platform { background: var(--p-youtube) !important; }
+#chat .item.tiktok  .info .platform .hidden-platform { background: var(--p-tiktok)  !important; }
+#chat .item.kick    .info .platform .hidden-platform { background: var(--p-kick)    !important; }
+
+#chat .item .info .platform .hidden-platform::after {
+    content: '';
+    position: absolute; inset: 0;
+    font-family: "Font Awesome 7 Brands", "Font Awesome 6 Brands";
+    font-weight: 400;
+    font-size: 10px;
+    color: rgba(255,255,255,0.95);
+    display: flex; align-items: center; justify-content: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    filter: none !important;
+}
+#chat .item.twitch  .info .platform .hidden-platform::after { content: '\f1e8'; }
+#chat .item.youtube .info .platform .hidden-platform::after { content: '\f167'; }
+#chat .item.tiktok  .info .platform .hidden-platform::after { content: '\e07b'; }
+#chat .item.kick    .info .platform .hidden-platform::after { content: 'K'; font-family: var(--chatrd-font); font-weight: 900; color: #000; font-size: 11px; }
+
+
+/* =========================================================
+   USERNAME — inside col 1, with role-colored glow
+   ========================================================= */
+
+#chat .item .info .user {
+    order: 5;
+    display: inline-block !important;   /* inline-flex breaks text-overflow */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    min-width: 0;
+    flex: 0 1 auto;
+    text-align: right;
+    font-size: var(--chatrd-size-user) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.012em;
+    line-height: 1.5;
+    padding: 2px 0;           /* breathing room for glow */
+}
+
+#chat .user { color: var(--fg-primary); }
+#chat .item.twitch  .user { color: var(--p-twitch)  !important; }
+#chat .item.youtube .user { color: var(--p-youtube) !important; }
+#chat .item.tiktok  .user { color: var(--p-tiktok)  !important; }
+#chat .item.kick    .user { color: var(--p-kick)    !important; }
+
+/* Role weight + color override.
+   Cascade order is low → high priority: sub < founder < artist < vip
+   < partner < verified < turbo < prime < global-mod < mod < admin
+   < staff < streamer. Lead mod + broadcaster get extra emphasis below. */
+#chat .item.chat.role-sub         .user { color: var(--role-sub)         !important; font-weight: 700 !important; }
+#chat .item.chat.role-founder     .user { color: var(--role-founder)     !important; font-weight: 700 !important; }
+#chat .item.chat.role-artist      .user { color: var(--role-artist)      !important; font-weight: 700 !important; }
+#chat .item.chat.role-vip         .user { color: var(--role-vip)         !important; font-weight: 700 !important; }
+#chat .item.chat.role-partner     .user { color: var(--role-partner)     !important; font-weight: 700 !important; }
+#chat .item.chat.role-verified    .user { color: var(--role-verified)    !important; font-weight: 700 !important; }
+#chat .item.chat.role-turbo       .user { color: var(--role-turbo)       !important; font-weight: 700 !important; }
+#chat .item.chat.role-prime       .user { color: var(--role-prime)       !important; font-weight: 700 !important; }
+#chat .item.chat.role-hype        .user { color: var(--role-hype)        !important; font-weight: 700 !important; }
+#chat .item.chat.role-bits-leader .user { color: var(--role-bits-leader) !important; font-weight: 700 !important; }
+#chat .item.chat.role-global-mod  .user { color: var(--role-global-mod)  !important; font-weight: 800 !important; }
+#chat .item.chat.role-admin       .user { color: var(--role-admin)       !important; font-weight: 800 !important; }
+#chat .item.chat.role-staff       .user { color: var(--role-staff)       !important; font-weight: 800 !important; }
+
+/* POP ROLES — broadcaster + mod + lead mod stand out above everyone else */
+#chat .item.chat.role-mod .user {
+    color: var(--role-mod) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em;
+    text-shadow:
+        0 0 5px rgba(0,173,3,0.65),
+        0 0 2px rgba(0,0,0,0.85),
+        0 1px 1px rgba(0,0,0,0.6);
+}
+#chat .item.chat.role-lead-mod .user {
+    color: var(--role-mod) !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.01em;
+    font-size: calc(var(--chatrd-size-user) + 1px);
+    text-shadow:
+        0 0 8px rgba(0,173,3,0.85),
+        0 0 3px rgba(0,0,0,0.9),
+        0 1px 1px rgba(0,0,0,0.7);
+}
+#chat .item.chat.streamer .user {
+    color: var(--role-streamer) !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.02em;
+    font-size: calc(var(--chatrd-size-user) + 1px);
+    text-shadow:
+        0 0 8px rgba(233,25,22,0.85),
+        0 0 3px rgba(0,0,0,0.9),
+        0 1px 1px rgba(0,0,0,0.7);
+}
+
+
+/* =========================================================
+   ROLE ICONS — rendered as inline span (no pseudo clipping)
+   Use a separate element via ::before on .info with `flex: 0 0 auto`.
+   Role icon has NO text-shadow to avoid clipping.
+   ========================================================= */
+
+#chat .item.chat .info::before {
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 10px;
+    flex-shrink: 0;
+    order: 4;
+    display: none;
+    line-height: 1;
+    text-shadow: none;
+    filter: drop-shadow(0 0 4px currentColor);
+}
+/* Role icons — cascade from least → most prestigious so the highest role wins */
+#chat .item.chat.role-sub         .info::before { content: '\f005'; color: var(--role-sub);         display: inline-block; }  /* star */
+#chat .item.chat.role-founder     .info::before { content: '\f164'; color: var(--role-founder);     display: inline-block; }  /* thumbs-up */
+#chat .item.chat.role-artist      .info::before { content: '\f001'; color: var(--role-artist);      display: inline-block; }  /* music */
+#chat .item.chat.role-vip         .info::before { content: '\f3a5'; color: var(--role-vip);         display: inline-block; }  /* gem (diamond) */
+#chat .item.chat.role-turbo       .info::before { content: '\f0e7'; color: var(--role-turbo);       display: inline-block; }  /* bolt */
+#chat .item.chat.role-prime       .info::before { content: '\f521'; color: var(--role-prime);       display: inline-block; }  /* crown */
+#chat .item.chat.role-hype        .info::before { content: '\f238'; color: var(--role-hype);        display: inline-block; }  /* train */
+#chat .item.chat.role-bits-leader .info::before { content: '\f3a5'; color: var(--role-bits-leader); display: inline-block; }  /* gem */
+#chat .item.chat.role-verified    .info::before { content: '\f058'; color: var(--role-verified);    display: inline-block; }  /* circle-check */
+#chat .item.chat.role-partner     .info::before { content: '\f058'; color: var(--role-partner);     display: inline-block; }  /* circle-check */
+#chat .item.chat.role-global-mod  .info::before { content: '\f0ac'; color: var(--role-global-mod);  display: inline-block; }  /* globe */
+#chat .item.chat.role-admin       .info::before { content: '\f132'; color: var(--role-admin);       display: inline-block; }  /* shield */
+#chat .item.chat.role-staff       .info::before { content: '\f0ad'; color: var(--role-staff);       display: inline-block; }  /* wrench */
+
+/* POP: Moderator — gavel + green glow (FA Free compatible) */
+#chat .item.chat.role-mod .info::before {
+    content: '\f0e3';  /* gavel */
+    color: var(--role-mod);
+    display: inline-block;
+    font-size: 11px;
+    filter: drop-shadow(0 0 5px var(--role-mod)) drop-shadow(0 0 1px rgba(0,0,0,0.8));
+}
+
+/* POP: Lead Moderator — shield-halved with strong glow, one tier above mod */
+#chat .item.chat.role-lead-mod .info::before {
+    content: '\f3ed';  /* shield-halved */
+    color: var(--role-mod);
+    display: inline-block;
+    font-size: 12px;
+    filter: drop-shadow(0 0 7px var(--role-mod)) drop-shadow(0 0 2px rgba(0,0,0,0.9));
+}
+
+/* POP: Broadcaster — pulsing red dot + red camera */
+#chat .item.chat.streamer .info::before {
+    content: '\f030';  /* camera */
+    color: var(--role-streamer);
+    display: inline-block;
+    font-size: 11px;
+    text-shadow: none;
+    filter: drop-shadow(0 0 6px var(--role-streamer)) drop-shadow(0 0 2px rgba(0,0,0,0.85));
+    animation: chatrd-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes chatrd-pulse {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.3); }
+}
+
+
+/* =========================================================
+   MESSAGE COLUMN — col 3
+   ========================================================= */
+
+#chat:not(.horizontal):not(.oneline) .item .actual-message {
+    grid-column: 3;
+    margin: 0 !important;
+    padding: 2px 0 0 0 !important;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    color: var(--fg-primary) !important;
+    font-weight: 400 !important;
+    font-size: var(--chatrd-size-chat);
+}
+
+/* ---------- Twitch-style emotes: white sticker outline + pop-in ---------- */
+
+#chat .item .actual-message img {
+    vertical-align: middle;
+    height: 22px !important;
+    max-width: 100%;
+    margin: -2px 1px !important;
+    /* sticker white outline via layered drop-shadow */
+    filter:
+        drop-shadow(0  1px 0 rgba(255,255,255,0.95))
+        drop-shadow(0 -1px 0 rgba(255,255,255,0.95))
+        drop-shadow( 1px 0 0 rgba(255,255,255,0.95))
+        drop-shadow(-1px 0 0 rgba(255,255,255,0.95))
+        drop-shadow(0 2px 3px rgba(0,0,0,0.45));
+    transform-origin: center;
+    animation: chatrd-emote-pop 360ms var(--ease-spring) both;
+    transition: transform 180ms var(--ease-spring);
+}
+#chat .item .actual-message img:hover {
+    transform: scale(1.12) rotate(-3deg);
+}
+
+@keyframes chatrd-emote-pop {
+    0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+    60%  { opacity: 1; transform: scale(1.14) rotate(3deg); }
+    100% { opacity: 1; transform: none; }
+}
+
+#chat .item .actual-message img.gigantified {
+    height: 56px !important;
+    animation: chatrd-emote-float 3s ease-in-out infinite;
+}
+@keyframes chatrd-emote-float {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50%      { transform: translateY(-3px) rotate(2deg); }
+}
+
+#chat .item .message .actual-message a {
+    color: #93c5fd !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    border-bottom: 1px dashed rgba(147,197,253,0.4);
+}
+
+
+/* =========================================================
+   META ELEMENTS
+   ========================================================= */
+
+#chat .item .timestamp {
+    font-family: var(--chatrd-mono) !important;
+    font-size: var(--chatrd-size-meta) !important;
+    font-weight: 500 !important;
+    color: var(--fg-dim) !important;
+    padding: 0 !important;
+    background: transparent !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+#chat .item .pronouns {
+    background: rgba(255,255,255,0.06) !important;
+    padding: 0 4px !important;
+    font-size: 9px !important;
+    border-radius: 3px !important;
+    color: var(--fg-dim) !important;
+    font-weight: 600;
+    height: 14px;
+    display: inline-flex !important;
+    align-items: center;
+}
+#chat .item .badges { height: auto !important; }
+#chat .item .badges img {
+    height: 13px !important;
+    margin: 0 !important;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5));
+}
+
+
+/* =========================================================
+   GROUPED MESSAGES — same user consecutive
+   ========================================================= */
+
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .platform,
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .user,
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .timestamp,
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .pronouns,
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .badges,
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info::before {
+    visibility: hidden;
+}
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped { margin-top: -2px !important; }
+
+
+/* =========================================================
+   FIRST-TIME CHATTER
+   ========================================================= */
+
+/* First-time chatter — same bubble pattern as mention for perfect alignment.
+   The "First-time Chatter" banner is hidden; the status is conveyed via a
+   leading sparkle chip inside the bubble + amber tint + subtle glow. */
+#chat:not(.horizontal):not(.oneline) .item.chat.first-chatter .message {
+    grid-template-columns: var(--chatrd-user-col) var(--chatrd-tile) max-content !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 4px !important;
+    margin: 1px 0 !important;
+}
+#chat:not(.horizontal):not(.oneline) .item.chat.first-chatter .actual-message {
+    max-width: min(100%, 60ch);
+    padding: 2px 10px 2px 8px !important;
+    background: rgba(251,191,36,0.18) !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.55),
+                0 0 14px rgba(251,191,36,0.18) !important;
+    -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+    position: relative;
+}
+/* Leading icon — "user-plus" reads as "new person joining", clearer than a sparkle. */
+#chat:not(.horizontal):not(.oneline) .item.chat.first-chatter .actual-message::before {
+    content: '\f234';             /* user-plus (FA Free) */
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    color: #fbbf24;
+    margin-right: 6px;
+    display: inline-block;
+    vertical-align: baseline;
+    filter: drop-shadow(0 0 5px rgba(251,191,36,0.8));
+    text-shadow: none;
+    animation: chatrd-sparkle 2.4s ease-in-out infinite;
+}
+@keyframes chatrd-sparkle {
+    0%, 100% { opacity: 0.75; transform: scale(1)   rotate(0deg); }
+    50%      { opacity: 1;    transform: scale(1.15) rotate(8deg); }
+}
+
+/* Hide the textual banner — information is now fully in the bubble treatment */
+#chat .item.first-chatter .first-message {
+    display: none !important;
+}
+
+
+/* =========================================================
+   REPLY / SHARED CHAT
+   ========================================================= */
+
+#chat .item.reply .reply,
+#chat .item .shared-chat {
+    padding-left: calc(var(--chatrd-user-col) + var(--chatrd-tile) + var(--chatrd-gap) * 2);
+}
+#chat .item.reply .reply {
+    font-size: 10px !important;
+    color: var(--fg-dim) !important;
+}
+#chat .item .shared-chat span.origin {
+    background: var(--surface-1) !important;
+    border-radius: 4px !important;
+    font-size: 9px !important;
+    padding: 1px 6px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: var(--ring);
+}
+
+
+/* =========================================================
+   @MENTION
+   ========================================================= */
+
+/* Mention — full-width bubble wrapping username + tile + message.
+   Keeps the normal 3-col grid intact so alignment with other chat rows is
+   preserved; the bubble just spans the entire row width with a platform
+   tinted background + border. */
+/* Mention row: grid unchanged (columns align with normal rows).
+   Only the .actual-message is bubbled — username + tile stay plain. */
+#chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .message {
+    --mention-color: 145,70,255;   /* twitch default */
+    grid-template-columns: var(--chatrd-user-col) var(--chatrd-tile) max-content !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px 4px !important;
+    margin: 1px 0 !important;
+}
+#chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .actual-message {
+    max-width: min(100%, 60ch);
+    padding: 2px 10px !important;
+    background: rgba(var(--mention-color), 0.20) !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    box-shadow: inset 0 0 0 1px rgba(var(--mention-color), 0.55) !important;
+    -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+}
+#chat:not(.horizontal):not(.oneline) .item.youtube.chat.streamer-mentioned .message { --mention-color: 255,0,51; }
+#chat:not(.horizontal):not(.oneline) .item.tiktok.chat.streamer-mentioned  .message { --mention-color: 255,0,80; }
+#chat:not(.horizontal):not(.oneline) .item.kick.chat.streamer-mentioned    .message { --mention-color: 83,252,24; }
+
+/* =========================================================
+   ANNOUNCEMENT
+   ========================================================= */
+
+/* Announcement — shares event card treatment (mesh + rail + icon chip).
+   Default accent is blue; role classes (.green/.orange/.purple) swap the duo. */
+#chat .item.announcement {
+    margin: 6px 0 !important;
+    font-size: var(--chatrd-size-event) !important;
+    line-height: var(--chatrd-line) !important;
+    color: var(--fg-primary) !important;
+    text-shadow: var(--glow-text) !important;
+    --evt-accent:   #3b82f6;
+    --evt-accent-2: #60a5fa;
+}
+#chat:not(.horizontal):not(.oneline) .item.announcement .message {
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: nowrap;
+    background: rgba(10,10,16, 0.88) !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 8px !important;
+    padding: 4px 12px 4px 36px !important;
+    min-height: 28px !important;
+    position: relative;
+    isolation: isolate;
+    contain: paint;
+    box-shadow:
+        0 6px 14px rgba(0,0,0,0.40),
+        inset 0 0 0 1px rgba(255,255,255,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    box-sizing: border-box !important;
+    max-width: 100%;
+    -webkit-backdrop-filter: blur(6px) saturate(130%);
+            backdrop-filter: blur(6px) saturate(130%);
+    overflow: hidden !important;
+}
+/* Mesh blob layer */
+#chat .item.announcement .message::before {
+    content: '';
+    position: absolute;
+    inset: -35%;
+    background:
+        radial-gradient(55% 45% at 18% 40%, var(--evt-accent)   0%, transparent 62%),
+        radial-gradient(50% 42% at 82% 65%, var(--evt-accent-2) 0%, transparent 58%);
+    filter: blur(26px) saturate(150%);
+    opacity: 0.65;
+    z-index: 0;
+    pointer-events: none;
+    animation: chatrd-mesh 9s ease-in-out infinite alternate;
+    will-change: transform;
+    top: auto; /* override the 6px/bottom:6px rule from prior cascade */
+    left: -35%;
+    right: -35%;
+    bottom: -35%;
+    width: auto;
+    border-radius: 0;
+    box-shadow: none;
+}
+/* Flowing accent rail */
+#chat .item.announcement .message::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        var(--evt-accent) 25%,
+        var(--evt-accent-2) 50%,
+        var(--evt-accent) 75%,
+        transparent 100%);
+    background-size: 100% 220%;
+    animation: chatrd-rail 3s linear infinite;
+    z-index: 2;
+    pointer-events: none;
+}
+#chat .item.announcement .info,
+#chat .item.announcement .actual-message { position: relative; z-index: 1; }
+#chat:not(.horizontal):not(.oneline) .item.announcement .info {
+    display: inline-flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    flex: 0 0 auto;
+    grid-column: auto !important;
+    min-width: 0;
+    position: static !important;   /* so avatar absolutes to .message */
+}
+#chat .item.announcement .info::after,
+#chat .item.announcement .info::before { display: none !important; }
+#chat .item.announcement .info .platform { display: none !important; }
+#chat .item.announcement .info .user {
+    color: var(--fg-primary) !important;
+    text-align: left !important;
+    font-weight: 800 !important;
+    font-size: var(--chatrd-size-event) !important;
+    letter-spacing: -0.012em;
+    max-width: none !important;
+    overflow: visible !important;
+    white-space: nowrap;
+    display: inline-block !important;
+}
+#chat .item.announcement .actual-message {
+    grid-column: auto !important;
+    flex: 1 1 100%;
+    padding: 0 !important;
+    font-size: var(--chatrd-size-event) !important;
+    line-height: 1.4 !important;
+    font-weight: 400 !important;
+}
+/* Icon chip — same treatment as events */
+#chat:not(.horizontal):not(.oneline) .item.announcement .info .avatar,
+#chat:not(.horizontal):not(.oneline) .item.announcement .info .avatar:empty {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    border: none !important;
+    position: absolute !important;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(140deg, var(--evt-accent), var(--evt-accent-2)) !important;
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -6px 12px rgba(0,0,0,0.25);
+    z-index: 3;
+    animation: chatrd-icon-in 520ms var(--ease-spring) both;
+}
+#chat .item.announcement .info .avatar:empty { overflow: hidden !important; position: absolute !important; }
+#chat .item.announcement .info .avatar:empty::after {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: conic-gradient(from 0deg,
+        transparent 0%,
+        rgba(255,255,255,0.45) 20%,
+        transparent 45%,
+        rgba(255,255,255,0.25) 70%,
+        transparent 95%);
+    animation: chatrd-icon-spin 3.2s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+}
+#chat .item.announcement .info .avatar:empty::before {
+    content: '\f0a1';
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    color: rgba(255,255,255,0.98);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
+    filter: none !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* Accent duo variants */
+#chat .item.announcement.green  { --evt-accent: #22c55e; --evt-accent-2: #86efac; }
+#chat .item.announcement.orange { --evt-accent: #f97316; --evt-accent-2: #fbbf24; }
+#chat .item.announcement.purple { --evt-accent: #a855f7; --evt-accent-2: #ec4899; }
+
+
+/* =========================================================
+   EVENTS — unified chat-language skeleton
+   Every event (sub / resub / gift / bits / raid / follow / donation / tiktok-gift / watch-streak / reward)
+   renders as: [3px rail] [icon chip] [user · action] [value pill]
+   Toast variant = elevated card above chat. Inline variant = compact chat-row.
+
+   Layout uses relative positioning + absolute rail/chip + flex info row
+   because .value lives INSIDE .info, so we can't use CSS Grid at .message level.
+   ========================================================= */
+
+#chat .event,
+#chat-toasts .event {
+    font-family: var(--chatrd-font) !important;
+    font-size: var(--chatrd-size-chat) !important;
+    line-height: var(--chatrd-line) !important;
+    color: var(--fg-primary) !important;
+    text-shadow: var(--glow-text) !important;
+    --evt-accent: var(--p-twitch);
+}
+
+/* .message — positioning host. Padding reserves rail + chip. */
+#chat:not(.horizontal):not(.oneline) .event .message,
+#chat-toasts .event .message {
+    display: block !important;
+    grid-template-columns: none !important;
+    position: relative !important;
+    padding: 3px 10px 3px 38px !important;
+    border-radius: var(--chatrd-radius-sm) !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    min-height: 24px !important;
+    max-width: 100%;
+    margin: 0 !important;
+    overflow: visible !important;
+    -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+    isolation: auto;
+    contain: none;
+    animation: none !important;
+}
+
+/* Accent rail — absolute at left edge. */
+#chat .event .message::before,
+#chat-toasts .event .message::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--evt-accent) !important;
+    border-radius: 2px;
+    opacity: 0.85;
+    inset: 0 auto 0 0 !important;
+    right: auto !important;
+    animation: none !important;
+    filter: none !important;
+    z-index: 1 !important;
+    margin: 0 !important;
+}
+
+/* Kill old mesh + animated rail pseudo */
+#chat .event .message::after,
+#chat-toasts .event .message::after {
+    content: none !important;
+    display: none !important;
+    animation: none !important;
+}
+
+/* .info — flex row holding chip, user, action, value */
+#chat:not(.horizontal):not(.oneline) .event .info,
+#chat-toasts .event .info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    position: static !important;
+    justify-content: flex-start !important;
+}
+
+/* Suppress chat-row dot + platform tile for events. */
+#chat .event .info::before,
+#chat .event .info::after,
+#chat-toasts .event .info::before,
+#chat-toasts .event .info::after { display: none !important; content: none !important; }
+#chat .event .platform,
+#chat-toasts .event .platform { display: none !important; }
+
+/* Icon chip — absolute at left 11px inside .message */
+#chat .event .info .avatar,
+#chat-toasts .event .info .avatar {
+    position: absolute !important;
+    left: 11px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    border-radius: var(--chatrd-radius-sm) !important;
+    background: color-mix(in srgb, var(--evt-accent) 22%, transparent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
+    border: none !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    z-index: 2;
+    animation: none !important;
+}
+
+/* Event kind glyph inside chip */
+#chat .event .info .avatar:empty::before,
+#chat-toasts .event .info .avatar:empty::before {
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--evt-accent);
+    text-shadow: none !important;
+    filter: none !important;
+    -webkit-font-smoothing: antialiased;
+}
+#chat .event .info .avatar img,
+#chat-toasts .event .info .avatar img {
+    width: 20px !important;
+    height: 20px !important;
+    object-fit: cover;
+}
+
+/* Per-kind glyph mapping */
+#chat .event.sub          .info .avatar:empty::before,
+#chat-toasts .event.sub          .info .avatar:empty::before { content: '\f005'; }  /* star */
+#chat .event.resub        .info .avatar:empty::before,
+#chat-toasts .event.resub        .info .avatar:empty::before { content: '\f091'; }  /* trophy */
+#chat .event.gift         .info .avatar:empty::before,
+#chat-toasts .event.gift         .info .avatar:empty::before { content: '\f06b'; }  /* gift */
+#chat .event.bits         .info .avatar:empty::before,
+#chat-toasts .event.bits         .info .avatar:empty::before { content: '\f3a5'; }  /* gem */
+#chat .event.reward       .info .avatar:empty::before,
+#chat-toasts .event.reward       .info .avatar:empty::before { content: '\f005'; }
+#chat .event.raid         .info .avatar:empty::before,
+#chat-toasts .event.raid         .info .avatar:empty::before { content: '\f0c0'; }  /* users */
+#chat .event.follow       .info .avatar:empty::before,
+#chat-toasts .event.follow       .info .avatar:empty::before { content: '\f004'; }  /* heart */
+#chat .event.share        .info .avatar:empty::before,
+#chat-toasts .event.share        .info .avatar:empty::before { content: '\f064'; }
+#chat .event.like         .info .avatar:empty::before,
+#chat-toasts .event.like         .info .avatar:empty::before { content: '\f004'; }
+#chat .event.watch-streak .info .avatar:empty::before,
+#chat-toasts .event.watch-streak .info .avatar:empty::before { content: '\f0e7'; }  /* bolt */
+#chat .event.streamelements .info .avatar:empty::before,
+#chat .event.streamlabs     .info .avatar:empty::before,
+#chat .event.kofi           .info .avatar:empty::before,
+#chat .event.patreon        .info .avatar:empty::before,
+#chat .event.fourthwall     .info .avatar:empty::before,
+#chat .event.tipeeestream   .info .avatar:empty::before,
+#chat-toasts .event.streamelements .info .avatar:empty::before,
+#chat-toasts .event.streamlabs     .info .avatar:empty::before,
+#chat-toasts .event.kofi           .info .avatar:empty::before,
+#chat-toasts .event.patreon        .info .avatar:empty::before,
+#chat-toasts .event.fourthwall     .info .avatar:empty::before,
+#chat-toasts .event.tipeeestream   .info .avatar:empty::before { content: '\f155'; }  /* dollar-circle */
+
+/* User + action typography inside .info */
+#chat .event .user,
+#chat-toasts .event .user {
+    font-weight: 700 !important;
+    color: var(--evt-accent) !important;
+    font-size: var(--chatrd-size-chat) !important;
+    letter-spacing: -0.006em;
+    flex-shrink: 0;
+    padding: 0 !important;
+    max-width: none !important;
+    overflow: visible !important;
+    white-space: nowrap;
+    display: inline-block !important;
+    text-align: left !important;
+}
+#chat .event .action,
+#chat-toasts .event .action {
+    color: var(--fg-muted) !important;
+    font-weight: 500 !important;
+    font-size: var(--chatrd-size-chat) !important;
+    flex-shrink: 1;
+    flex-grow: 0;
+    min-width: 0;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Value pill — pushed to the right edge of .info */
+#chat .event .value,
+#chat-toasts .event .value {
+    margin-left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2px 8px !important;
+    border-radius: var(--chatrd-radius-pill) !important;
+    font-size: var(--chatrd-size-pill) !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    letter-spacing: -0.006em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--evt-accent) !important;
+    background: color-mix(in srgb, var(--evt-accent) 18%, transparent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 45%, transparent) !important;
+    flex-shrink: 0;
+    font-family: var(--chatrd-mono);
+    animation: none !important;
+}
+#chat .event .value:empty,
+#chat-toasts .event .value:empty { display: none !important; }
+
+/* Inner <strong> inside .value keeps pill styling */
+#chat .event .value strong,
+#chat-toasts .event .value strong {
+    font-weight: inherit !important;
+    color: inherit !important;
+}
+
+/* Optional user-written message — block under the info row */
+#chat .event .actual-message,
+#chat-toasts .event .actual-message {
+    display: block;
+    line-height: var(--chatrd-line) !important;
+    font-weight: 400 !important;
+    color: var(--fg-primary) !important;
+    font-size: var(--chatrd-size-chat) !important;
+    padding: 0 !important;
+    margin: 1px 0 0 0 !important;
+    opacity: 0.92;
+}
+#chat .event .actual-message:empty,
+#chat-toasts .event .actual-message:empty { display: none !important; }
+
+/* Header row inside event template (mostly used for Announcement inside chat, not events) */
+#chat .event .header:empty,
+#chat-toasts .event .header:empty { display: none !important; }
+
+
+/* ---------- Per-event accent (single source of truth) ---------- */
+
+#chat .event.sub,
+#chat-toasts .event.sub         { --evt-accent: var(--role-sub); }
+#chat .event.resub,
+#chat-toasts .event.resub       { --evt-accent: var(--role-sub); }
+#chat .event.gift,
+#chat-toasts .event.gift        { --evt-accent: var(--role-sub); }
+#chat .event.bits,
+#chat-toasts .event.bits        { --evt-accent: #fbbf24; }
+#chat .event.raid,
+#chat-toasts .event.raid        { --evt-accent: var(--p-twitch); }
+#chat .event.follow,
+#chat-toasts .event.follow      { --evt-accent: var(--fg-muted); }
+#chat .event.reward,
+#chat-toasts .event.reward      { --evt-accent: var(--p-twitch); }
+#chat .event.watch-streak,
+#chat-toasts .event.watch-streak { --evt-accent: var(--role-hype); }
+#chat .event.streamelements,
+#chat .event.streamlabs,
+#chat-toasts .event.streamelements,
+#chat-toasts .event.streamlabs   { --evt-accent: #22c55e; }
+#chat .event.kofi,
+#chat-toasts .event.kofi         { --evt-accent: #29abe0; }
+#chat .event.patreon,
+#chat-toasts .event.patreon      { --evt-accent: #ff424d; }
+#chat .event.fourthwall,
+#chat-toasts .event.fourthwall   { --evt-accent: #6366f1; }
+#chat .event.tipeeestream,
+#chat-toasts .event.tipeeestream { --evt-accent: #49c5b6; }
+#chat .event.tiktok.gift,
+#chat-toasts .event.tiktok.gift  { --evt-accent: var(--p-tiktok); }
+
+/* Platform override falls back to platform color if no kind accent matched. */
+#chat .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.follow):not(.watch-streak):not(.reward),
+#chat-toasts .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.follow):not(.watch-streak):not(.reward) { --evt-accent: var(--p-twitch); }
+#chat .event.youtube:not(.sub):not(.follow),
+#chat-toasts .event.youtube:not(.sub):not(.follow) { --evt-accent: var(--p-youtube); }
+#chat .event.kick:not(.sub):not(.follow),
+#chat-toasts .event.kick:not(.sub):not(.follow) { --evt-accent: var(--p-kick); }
+
+
+/* ---------- Bits big — pulse on chip only, not whole row ---------- */
+
+#chat .event.bits.bigger-than-1000  .info .avatar,
+#chat .event.bits.bigger-than-10000 .info .avatar,
+#chat .event.bits.bigger-than-100000 .info .avatar,
+#chat-toasts .event.bits.bigger-than-1000  .info .avatar,
+#chat-toasts .event.bits.bigger-than-10000 .info .avatar,
+#chat-toasts .event.bits.bigger-than-100000 .info .avatar {
+    animation: chatrd-chip-pulse 2.2s ease-in-out infinite !important;
+}
+#chat .event.bits.bigger-than-10000 .info .avatar,
+#chat-toasts .event.bits.bigger-than-10000 .info .avatar { animation-duration: 1.6s !important; }
+#chat .event.bits.bigger-than-100000 .info .avatar,
+#chat-toasts .event.bits.bigger-than-100000 .info .avatar { animation-duration: 1.1s !important; }
+@keyframes chatrd-chip-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent), 0 0 0 0 color-mix(in srgb, var(--evt-accent) 45%, transparent); }
+    50%      { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 85%, transparent), 0 0 0 4px color-mix(in srgb, var(--evt-accent) 0%, transparent); }
+}
+
+
+/* ---------- TikTok gift — use chip slot for the gift image ---------- */
+
+#chat .event.tiktok.gift .info .avatar:empty::before,
+#chat-toasts .event.tiktok.gift .info .avatar:empty::before { content: '\f06b'; }  /* fallback if no img */
+
+#chat .event.tiktok.gift .value,
+#chat-toasts .event.tiktok.gift .value {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: inherit !important;
+    font-family: var(--chatrd-font) !important;
+}
+#chat .event.tiktok.gift .value .gift-info,
+#chat-toasts .event.tiktok.gift .value .gift-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+#chat .event.tiktok.gift .value span.gift-image,
+#chat-toasts .event.tiktok.gift .value span.gift-image {
+    display: inline-flex !important;
+    align-items: center !important;
+}
+#chat .event.tiktok.gift .value span.gift-image img,
+#chat-toasts .event.tiktok.gift .value span.gift-image img {
+    height: 18px !important;
+    width: auto !important;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)) !important;
+    animation: none !important;
+}
+#chat .event.tiktok.gift .value span.gift-value,
+#chat-toasts .event.tiktok.gift .value span.gift-value {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2px 8px !important;
+    border-radius: var(--chatrd-radius-pill) !important;
+    font-size: var(--chatrd-size-pill) !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    color: #fbbf24 !important;
+    background: rgba(251,191,36,0.18) !important;
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.45) !important;
+    font-family: var(--chatrd-mono) !important;
+    font-variant-numeric: tabular-nums;
+}
+#chat .event.tiktok.gift .value span.gift-value img,
+#chat-toasts .event.tiktok.gift .value span.gift-value img {
+    width: 11px !important; height: 11px !important;
+    filter: none !important; margin: 0 !important; animation: none !important;
+}
+#chat .event.tiktok.gift .action strong,
+#chat-toasts .event.tiktok.gift .action strong {
+    color: var(--fg-primary) !important;
+    font-weight: 700;
+}
+
+/* TikTok join — invisible */
+#chat .event.tiktok.join .message,
+#chat-toasts .event.tiktok.join .message { display: none !important; }
+
+
+/* ---------- TOAST LAYER ---------- */
+
+#chat-toasts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 6px 6px 0;
+    display: flex;
+    flex-direction: column-reverse;    /* newest near top edge, older above (stack grows up) */
+    gap: 6px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#chat-toasts .event {
+    pointer-events: auto;
+    animation: none;
+}
+
+#chat-toasts .event .message {
+    min-height: 40px !important;
+    padding: 8px 12px 8px 48px !important;
+    background: var(--surface-2) !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.45),
+        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 25%, rgba(255,255,255,0.08)) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+            backdrop-filter: blur(10px) saturate(130%);
+}
+
+/* Toast chip bigger + brighter */
+#chat-toasts .event .info .avatar {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    left: 12px !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0,0,0,0.4)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent), 0 2px 6px rgba(0,0,0,0.25) !important;
+}
+#chat-toasts .event .info .avatar:empty::before {
+    font-size: 14px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.45) !important;
+}
+#chat-toasts .event .info .avatar img {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* Toast rail — brighter + thicker gradient feel */
+#chat-toasts .event .message::before {
+    opacity: 1;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--evt-accent) 60%, transparent);
+}
+
+/* Toast user color a bit hotter */
+#chat-toasts .event .user { font-weight: 800 !important; }
+
+/* Toast tiktok gift image a bit bigger */
+#chat-toasts .event.tiktok.gift .value span.gift-image img { height: 24px !important; }
+
+
+/* ---------- Chat-row entrance (kept) ---------- */
+
+@keyframes chatrd-chat-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes chatrd-event-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+#chat .item.chat { animation: chatrd-chat-in 220ms var(--ease-out) both; }
+#chat .event     { animation: chatrd-event-in 260ms var(--ease-out) both; }
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    #chat .item.chat,
+    #chat .event,
+    #chat-toasts .event,
+    #chat-toasts .event .info .avatar,
+    #chat .event .info .avatar,
+    #chat .item.chat.streamer .info::before,
+    #chat .item .actual-message img,
+    #chat .item .actual-message img.gigantified {
+        animation: none !important;
+    }
+}
+
+
+/* =========================================================
+   MODERATION
+   ========================================================= */
+
+#chat .item .chatmoderation {
+    position: absolute;
+    right: 4px; top: 4px;
+    display: none;
+    gap: 2px;
+    background: rgba(0,0,0,0.65);
+    border-radius: 4px;
+    padding: 2px;
+    z-index: 2;
+    box-shadow: var(--ring);
+}
+#chat .item:hover .chatmoderation { display: flex; }
+#chat .item .chatmoderation button {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 10px;
+    padding: 2px 4px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+#chat .item .chatmoderation button:hover { background: rgba(255,255,255,0.1); color: #fff; }

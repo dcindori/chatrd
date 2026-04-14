@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatRD Preview — Separator-Anchored</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css">
+
+    <!-- Same load order as chat.html -->
+    <link rel="stylesheet" href="css/chatrd.css">
+    <link rel="stylesheet" href="css/skin-chatrd.css">
+
+    <!-- Module CSS (loaded after skin, mirrors chat.html) -->
+    <link rel="stylesheet" href="js/modules/twitch/module.css">
+    <link rel="stylesheet" href="js/modules/youtube/module.css">
+    <link rel="stylesheet" href="js/modules/tiktok/module.css">
+    <link rel="stylesheet" href="js/modules/kick/module.css">
+    <link rel="stylesheet" href="js/modules/streamelements/module.css">
+    <link rel="stylesheet" href="js/modules/streamlabs/module.css">
+    <link rel="stylesheet" href="js/modules/patreon/module.css">
+    <link rel="stylesheet" href="js/modules/tipeeestream/module.css">
+    <link rel="stylesheet" href="js/modules/kofi/module.css">
+    <link rel="stylesheet" href="js/modules/fourthwall/module.css">
+
+    <!-- Framer Motion (mirrors chat.html wiring) -->
+    <script type="module">
+        import { animate } from 'https://cdn.jsdelivr.net/npm/motion@12.23.12/+esm';
+        window.chatrdAnimate = animate;
+    </script>
+    <script src="js/chatrd-scramble.js"></script>
+
+    <style>
+        /* Preview-only styles */
+        body {
+            margin: 0; height: 100vh; overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 20%, #0f3460 40%, #533483 60%, #e94560 80%, #f38181 100%);
+            background-size: 600% 600%;
+            animation: bg 20s ease infinite;
+        }
+        @keyframes bg {
+            0%   { background-position: 0% 50%; }
+            25%  { background-position: 50% 0%; }
+            50%  { background-position: 100% 50%; }
+            75%  { background-position: 50% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body.scene-dark {
+            background: linear-gradient(135deg, #0a0a12 0%, #12122a 35%, #0d1a2a 65%, #1e1040 100%);
+            background-size: 400% 400%;
+        }
+        body.scene-bright {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ff9a9e 50%, #a18cd1 75%, #fbc2eb 100%);
+            background-size: 600% 600%;
+            animation: bg 15s ease infinite;
+        }
+        body.scene-green {
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 30%, #2d5016 60%, #0b3d0b 100%);
+            background-size: 400% 400%;
+            animation: bg 18s ease infinite;
+        }
+        body.scene-checker {
+            background:
+                repeating-conic-gradient(#808080 0% 25%, #a0a0a0 0% 50%) 0 0 / 32px 32px;
+            animation: none;
+        }
+
+        .ctrl {
+            position: fixed; top: 8px; right: 8px; z-index: 100;
+            display: flex; flex-direction: column; gap: 3px;
+            font-family: "Inter", system-ui, sans-serif;
+            max-height: calc(100vh - 16px);
+            overflow-y: auto;
+            padding: 4px;
+            scrollbar-width: thin;
+        }
+        .ctrl label, .ctrl button, .ctrl .row {
+            display: flex; align-items: center; gap: 6px;
+            color: #fff; font-size: 10px; font-weight: 500;
+            background: rgba(8,8,14,0.82);
+            padding: 5px 9px; border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+        }
+        .ctrl button { justify-content: center; white-space: nowrap; }
+        .ctrl button:hover { background: rgba(255,255,255,0.10); }
+        .ctrl button.active { background: rgba(145,70,255,0.3); border-color: rgba(145,70,255,0.3); }
+        .ctrl input[type=range] { width: 80px; accent-color: #9146ff; }
+        .ctrl span.val { font-variant-numeric: tabular-nums; min-width: 30px; text-align: right; color: rgba(255,255,255,0.4); font-size: 9px; }
+        .ctrl .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 3px 0; }
+        .ctrl .scene-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
+        .ctrl .scene-btns button { font-size: 9px; padding: 4px 5px; }
+        .ctrl .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+        .ctrl .grid2 button { font-size: 9px; padding: 4px 6px; }
+        .ctrl .section-title {
+            color: rgba(255,255,255,0.35);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 3px 2px 1px;
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div class="ctrl">
+        <label>Opacity <input type="range" id="sl-o" min="0" max="100" value="50"><span class="val" id="vo">0.50</span></label>
+        <label>User Col <input type="range" id="sl-w" min="60" max="220" value="120"><span class="val" id="vw">120px</span></label>
+
+        <div class="divider"></div>
+        <div class="section-title">Scene</div>
+        <div class="scene-btns">
+            <button onclick="setScene('default')">Game</button>
+            <button onclick="setScene('dark')">Dark</button>
+            <button onclick="setScene('bright')">Light</button>
+            <button onclick="setScene('green')">Green</button>
+            <button onclick="setScene('checker')">Check</button>
+        </div>
+        <button id="btn-fade" class="active" onclick="toggleFade()">Fade: ON</button>
+
+        <div class="divider"></div>
+        <div class="section-title">Chat</div>
+        <div class="grid2">
+            <button onclick="addMsg()">+ Chat</button>
+            <button onclick="addLongMsg()">+ Long</button>
+            <button onclick="addLongUsername()">+ Long User</button>
+            <button onclick="addMention()">+ Mention</button>
+            <button onclick="addEmoteHeavy()">+ Emotes</button>
+            <button onclick="addBttvGifs()">+ BTTV GIFs</button>
+            <button onclick="addFirstChatter()">+ First</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Twitch Roles</div>
+        <div class="grid2">
+            <button onclick="addMsg('twitch','role-sub')">+ Sub</button>
+            <button onclick="addMsg('twitch','role-founder')">+ Founder</button>
+            <button onclick="addMsg('twitch','role-vip')">+ VIP</button>
+            <button onclick="addMsg('twitch','role-artist')">+ Artist</button>
+            <button onclick="addMsg('twitch','role-partner')">+ Partner</button>
+            <button onclick="addMsg('twitch','role-verified')">+ Verified</button>
+            <button onclick="addMsg('twitch','role-turbo')">+ Turbo</button>
+            <button onclick="addMsg('twitch','role-prime')">+ Prime</button>
+            <button onclick="addMsg('twitch','role-hype')">+ Hype</button>
+            <button onclick="addMsg('twitch','role-bits-leader')">+ Bits Ldr</button>
+            <button onclick="addMsg('twitch','role-staff')">+ Staff</button>
+            <button onclick="addMsg('twitch','role-admin')">+ Admin</button>
+            <button onclick="addMsg('twitch','role-global-mod')">+ Global</button>
+            <button onclick="addMsg('twitch','role-mod')">+ Mod</button>
+            <button onclick="addMsg('twitch','role-lead-mod')">+ Lead Mod</button>
+            <button onclick="addMsg('twitch','streamer')">+ Streamer</button>
+            <button onclick="addAllRoles()">+ All</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Events</div>
+        <div class="grid2">
+            <button onclick="addEvent('sub')">+ Sub</button>
+            <button onclick="addEvent('resub')">+ Resub</button>
+            <button onclick="addEvent('gift')">+ Gift</button>
+            <button onclick="addEvent('bits')">+ Bits</button>
+            <button onclick="addEvent('bitsbig')">+ Bits>1k</button>
+            <button onclick="addEvent('raid')">+ Raid</button>
+            <button onclick="addEvent('follow')">+ Follow</button>
+            <button onclick="addEvent('announce')">+ Announce</button>
+            <button onclick="addEvent('donation')">+ Donation</button>
+            <button onclick="addEvent('member')">+ YT Mem</button>
+        </div>
+        <button onclick="addTikTokGift()">+ TikTok Gift</button>
+        <button onclick="addEveryEvent()" style="margin-top:4px;">+ Every event (audit)</button>
+
+        <div class="divider"></div>
+        <div class="section-title">Stress</div>
+        <div class="grid2">
+            <button onclick="flood(20)">Flood 20</button>
+            <button onclick="flood(100, 25)">Flood 100</button>
+            <button onclick="flood(200, 15)">Flood 200</button>
+            <button onclick="clearChat()">Clear</button>
+        </div>
+    </div>
+
+    <div id="container"><div class="wrapper"><div id="chat-toasts" aria-live="polite"></div><div id="chat"></div></div></div>
+
+<script>
+const chat = document.getElementById('chat'), R = document.documentElement.style;
+const chatToasts = document.getElementById('chat-toasts');
+const TOAST_STACK_MAX = 3, TOAST_LIFETIME_MS = 5000;
+
+// ---------- Controls ----------
+document.getElementById('sl-o').addEventListener('input', e => {
+    const v = (e.target.value / 100).toFixed(2);
+    R.setProperty('--chatrd-bg-opacity', v);
+    document.getElementById('vo').textContent = v;
+});
+document.getElementById('sl-w').addEventListener('input', e => {
+    R.setProperty('--chatrd-user-col', e.target.value + 'px');
+    document.getElementById('vw').textContent = e.target.value + 'px';
+});
+
+function setScene(s) {
+    document.body.className = s === 'default' ? '' : 'scene-' + s;
+}
+
+let fadeOn = true;
+function toggleFade() {
+    fadeOn = !fadeOn;
+    const btn = document.getElementById('btn-fade');
+    if (fadeOn) {
+        chat.style.removeProperty('-webkit-mask-image');
+        chat.style.removeProperty('mask-image');
+        btn.textContent = 'Fade: ON';
+        btn.classList.add('active');
+    } else {
+        chat.style.setProperty('-webkit-mask-image', 'none');
+        chat.style.setProperty('mask-image', 'none');
+        btn.textContent = 'Fade: OFF';
+        btn.classList.remove('active');
+    }
+}
+
+function clearChat() { chat.innerHTML = ''; }
+
+// ---------- Data ----------
+const P = ['twitch','youtube','tiktok','kick'];
+const U = ['NightOwl','PixelDream','StreamKing','CozyVibes','DarkLord','LunaStar','ChillGuy','RetroWave','Sakura','ThunderByte','GlitchWiz','WavyDays','xMoonlit','ZeroDay','FrostByte','NeonPulse','Cryptic','Paloma','Ember','Zephyr'];
+const LU = ['SergejJankulowski','MiriamUnterbuchberg','KudaidulJudikaoja','xXDarkShadowSlayerXx','TheLongestUsernameEverPossible','ReallyLongNameForTesting'];
+const M = [
+    "Hey everyone!", "GG that was insane", "LMAO no way", "Can you play that song again?",
+    "First time here love the stream", "Let's gooo", "This game is so good",
+    "How long have you been streaming?", "What a play!", "Hello from Germany!",
+    "The vibes are immaculate tonight", "W stream as always", "That combo was sick",
+    "bruh moment", "clipped and shipped", "gg wp no re", "does anyone know the song?",
+    "ty for the hours", "this is fire", "new PB when?"
+];
+const LM = [
+    "evo zasto je zavlacio sa ledom procitana knjiga i onda se desi ovo sto se desilo lol",
+    "This is a really long message that should wrap to a second line to test how the grid alignment handles multiline text in the chat bubble",
+    "UZ TO SVE TO JE POLA KG LEDA A NIKO NISTA NE KAZE",
+    "supercalifragilisticexpialidocious-antidisestablishmentarianism-pneumonoultramicroscopicsilicovolcanoconiosis",
+    "this message has a really really really long word like aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in the middle to stress wrapping"
+];
+const MENT = ["@Streamer that was amazing!", "Hey @Streamer check this out", "@Streamer when is the next collab?", "@Streamer you're cracked", "yo @Streamer love the new overlay"];
+// Twitch static + BTTV animated. BTTV serves GIF/WebP from same URL.
+const EMOTE_URLS = [
+    "https://static-cdn.jtvnw.net/emoticons/v2/4/default/dark/2.0",
+    "https://static-cdn.jtvnw.net/emoticons/v2/425618/default/dark/2.0",
+    "https://static-cdn.jtvnw.net/emoticons/v2/555555584/default/dark/2.0",
+    "https://static-cdn.jtvnw.net/emoticons/v2/88/default/dark/2.0"
+];
+// BTTV animated GIFs — mix of squared (no alpha) + alpha-channel transparency
+const BTTV_GIFS = [
+    "https://cdn.betterttv.net/emote/566ca38765dbbdab32ec0560/2x",   // SourPls — squared
+    "https://cdn.betterttv.net/emote/5b77ac3af7bddc567b1d5fb2/2x",   // ppHop — alpha
+    "https://cdn.betterttv.net/emote/5f1b0186cf6d2144653d2970/2x",   // catJAM — alpha
+    "https://cdn.betterttv.net/emote/609f34e167644f1d67e86619/2x",   // forsenJAM — alpha
+    "https://cdn.betterttv.net/emote/587fc95dafc2ff756c3f3012/2x",   // gachiPRIDE — squared
+    "https://cdn.betterttv.net/emote/5903ae40981c752327938935/2x",   // EatPooPoo — squared
+    "https://cdn.betterttv.net/emote/60f0edec8ed8b373e42231b2/2x",   // forsenLaughingAtYou — alpha
+    "https://cdn.betterttv.net/emote/6241d9123c6f14b68843c676/2x",   // forsenWiggle — alpha
+    "https://cdn.betterttv.net/emote/578bfabf78f4d09f44986499/2x",   // forsenShuffle — alpha
+    "https://cdn.betterttv.net/emote/57c6ea3ec0ace4924c690eb5/2x",   // forsenDisco — alpha
+];
+const r = a => a[Math.floor(Math.random() * a.length)];
+let n = 0;
+
+// ---------- Animation helper ----------
+// Uses window.chatrdAnimate (Framer Motion) when available.
+// If not loaded yet, falls back to CSS @keyframes in the skin.
+function anim(el) {
+    if (typeof window.chatrdAnimate === 'function') {
+        window.chatrdAnimate(el,
+            { opacity: [0, 1], y: [6, 0] },
+            { duration: 0.22, ease: [0.16, 1, 0.3, 1] });
+    }
+}
+
+function animEvent(el) {
+    if (typeof window.chatrdAnimate === 'function') {
+        window.chatrdAnimate(el,
+            { opacity: [0, 1], x: [-12, 0], scale: [0.98, 1] },
+            { type: 'spring', stiffness: 280, damping: 22 });
+    }
+    showToast(el);
+}
+
+function showToast(inlineEl) {
+    if (!chatToasts || !inlineEl) return;
+    const toast = inlineEl.cloneNode(true);
+    toast.removeAttribute('id');
+    toast.classList.add('toast-variant');
+    toast.querySelectorAll('.chatmoderation').forEach(el => el.remove());
+    toast.style.opacity = '0';
+    toast.style.pointerEvents = 'auto';
+    chatToasts.appendChild(toast);
+
+    const visible = chatToasts.querySelectorAll(':scope > .event:not([data-exiting]), :scope > .item:not([data-exiting])');
+    if (visible.length > TOAST_STACK_MAX) {
+        for (let i = 0; i < visible.length - TOAST_STACK_MAX; i++) dismissToast(visible[i], true);
+    }
+
+    if (typeof window.chatrdAnimate === 'function') {
+        window.chatrdAnimate(toast,
+            { opacity: [0, 1], y: [-14, 0], scale: [0.96, 1] },
+            { type: 'spring', stiffness: 360, damping: 28 });
+    } else {
+        requestAnimationFrame(() => { toast.style.opacity = '1'; });
+    }
+    toast._timer = setTimeout(() => dismissToast(toast, false), TOAST_LIFETIME_MS);
+}
+
+function dismissToast(toast, fast) {
+    if (!toast || toast.dataset.exiting === '1') return;
+    toast.dataset.exiting = '1';
+    if (toast._timer) clearTimeout(toast._timer);
+    const duration = fast ? 0.14 : 0.22;
+    if (typeof window.chatrdAnimate === 'function') {
+        const anim = window.chatrdAnimate(toast,
+            { opacity: [1, 0], y: [0, -10] },
+            { duration, ease: [0.4, 0, 1, 1] });
+        (anim.finished || Promise.resolve()).then(() => toast.remove()).catch(() => toast.remove());
+    } else {
+        toast.style.transition = `opacity ${duration}s ease, transform ${duration}s ease`;
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), duration * 1000 + 50);
+    }
+}
+
+// ---------- Builders ----------
+function buildChatRow(opts) {
+    const { id, user, platform, msg, classes = [], badges = '', timestamp = '' } = opts;
+    const cls = ['item', 'chat', platform, ...classes].join(' ');
+    return `
+        <div id="${id}" data-user="${user}" class="${cls}">
+            <div class="message">
+                <div class="info">
+                    ${timestamp ? `<span class="timestamp">${timestamp}</span>` : '<span class="timestamp"></span>'}
+                    <span class="platform"><span class="hidden-platform ${platform}"></span></span>
+                    <span class="badges">${badges}</span>
+                    <span class="avatar"></span>
+                    <span class="pronouns"></span>
+                    <span class="user">${user}</span>
+                </div>
+                <div class="actual-message">${msg}</div>
+            </div>
+        </div>`;
+}
+
+function buildEventRow(opts) {
+    const { id, user, classes, action, value = '', message = '' } = opts;
+    return `
+        <div id="${id}" data-user="${user}" class="event ${classes}">
+            <div class="message">
+                <div class="info">
+                    <span class="platform"></span>
+                    <span class="avatar"></span>
+                    <span class="user">${user}</span>
+                    <span class="action">${action}</span>
+                    <span class="value">${value}</span>
+                </div>
+                ${message ? `<div class="actual-message">${message}</div>` : ''}
+            </div>
+        </div>`;
+}
+
+function insert(html) {
+    chat.insertAdjacentHTML('afterbegin', html);
+    return chat.firstElementChild;
+}
+
+// ---------- Chat generators ----------
+function addMsg(forcePlatform, forceRole) {
+    const p = forcePlatform || r(P);
+    const u = r(U);
+    const m = r(M);
+    const id = 'm' + (n++);
+    const classes = forceRole ? [forceRole] : [];
+    const el = insert(buildChatRow({ id, user: u, platform: p, msg: m, classes }));
+    anim(el);
+}
+
+function addLongMsg() {
+    const p = r(P), u = r(U), m = r(LM), id = 'm' + (n++);
+    const el = insert(buildChatRow({ id, user: u, platform: p, msg: m }));
+    anim(el);
+}
+
+function addLongUsername() {
+    const p = r(P), u = r(LU), m = r(M), id = 'm' + (n++);
+    const el = insert(buildChatRow({ id, user: u, platform: p, msg: m }));
+    anim(el);
+}
+
+function addMention() {
+    const p = r(P), u = r(U), id = 'm' + (n++);
+    const el = insert(buildChatRow({
+        id, user: u, platform: p, msg: r(MENT),
+        classes: ['streamer-mentioned']
+    }));
+    anim(el);
+}
+
+function addEmoteHeavy() {
+    const p = 'twitch', u = r(U), id = 'm' + (n++);
+    const mix = [...EMOTE_URLS, ...BTTV_GIFS];
+    const emotes = Array(5).fill(0).map(() => `<img src="${r(mix)}">`).join(' ');
+    const msg = 'nice ' + emotes + ' ' + emotes;
+    const el = insert(buildChatRow({ id, user: u, platform: p, msg }));
+    anim(el);
+}
+
+function addBttvGifs() {
+    // Two rows: one mixed + text, one row of pure GIFs to see wrap + alpha behavior
+    const p1 = r(P), u1 = r(U), id1 = 'm' + (n++);
+    const e1 = BTTV_GIFS.slice(0, 4).map(u => `<img src="${u}">`).join(' ');
+    insert(buildChatRow({ id: id1, user: u1, platform: p1, msg: 'look at these ' + e1 }));
+    const p2 = r(P), u2 = r(U), id2 = 'm' + (n++);
+    const e2 = BTTV_GIFS.map(u => `<img src="${u}">`).join(' ');
+    const el2 = insert(buildChatRow({ id: id2, user: u2, platform: p2, msg: e2 }));
+    anim(el2);
+}
+
+function addFirstChatter() {
+    const p = r(P), u = r(U), m = r(M), id = 'm' + (n++);
+    const cls = ['first-chatter'];
+    const el = insert(`
+        <div id="${id}" data-user="${u}" class="item chat ${p} ${cls.join(' ')}">
+            <div class="message">
+                <div class="first-message">&#10024; First-time Chatter</div>
+                <div class="info">
+                    <span class="timestamp"></span>
+                    <span class="platform"><span class="hidden-platform ${p}"></span></span>
+                    <span class="badges"></span>
+                    <span class="avatar"></span>
+                    <span class="pronouns"></span>
+                    <span class="user">${u}</span>
+                </div>
+                <div class="actual-message">${m}</div>
+            </div>
+        </div>`);
+    anim(el);
+}
+
+function addAllRoles() {
+    const roles = [
+        'role-sub','role-founder','role-artist','role-vip','role-turbo',
+        'role-prime','role-hype','role-bits-leader','role-verified',
+        'role-partner','role-global-mod','role-admin','role-staff',
+        'role-mod','role-lead-mod','streamer'
+    ];
+    roles.forEach((role, i) => setTimeout(() => addMsg('twitch', role), i * 60));
+}
+
+// ---------- Event generators ----------
+function addEvent(kind) {
+    const u = r(U);
+    const id = 'm' + (n++);
+    let html = '';
+
+    switch (kind) {
+        case 'sub':
+            html = buildEventRow({
+                id, user: u, classes: 'sub twitch',
+                action: ' just subscribed!', value: 'Tier 1'
+            });
+            break;
+        case 'resub':
+            html = buildEventRow({
+                id, user: u, classes: 'resub twitch',
+                action: ' resubscribed for', value: (2 + Math.floor(Math.random() * 40)) + ' Months'
+            });
+            break;
+        case 'gift':
+            html = buildEventRow({
+                id, user: u, classes: 'gift twitch',
+                action: ' gifted', value: (5 + Math.floor(Math.random() * 45)) + ' Subs'
+            });
+            break;
+        case 'bits':
+            html = buildEventRow({
+                id, user: u, classes: 'bits twitch',
+                action: ' cheered', value: (50 + Math.floor(Math.random() * 500)) + ' Bits',
+                message: r(M)
+            });
+            break;
+        case 'bitsbig':
+            html = buildEventRow({
+                id, user: u, classes: 'bits twitch bigger-than-1000',
+                action: ' cheered', value: (1000 + Math.floor(Math.random() * 9000)) + ' Bits',
+                message: 'Keep it up! Love the stream!'
+            });
+            break;
+        case 'raid':
+            html = buildEventRow({
+                id, user: u, classes: 'raid twitch',
+                action: ' raided with', value: (10 + Math.floor(Math.random() * 500)) + ' Viewers'
+            });
+            break;
+        case 'follow': {
+            const plat = r(P);
+            html = buildEventRow({
+                id, user: u, classes: 'follow ' + plat,
+                action: ' just followed!'
+            });
+            break;
+        }
+        case 'announce':
+            html = `
+                <div id="${id}" data-user="${u}" class="item chat twitch announcement blue">
+                    <div class="message">
+                        <div class="info">
+                            <span class="timestamp"></span>
+                            <span class="platform"><span class="hidden-platform twitch"></span></span>
+                            <span class="badges"></span>
+                            <span class="avatar"></span>
+                            <span class="pronouns"></span>
+                            <span class="user">${u}</span>
+                        </div>
+                        <div class="actual-message">Reminder: giveaway ending in 30 minutes!</div>
+                    </div>
+                </div>`;
+            break;
+        case 'donation':
+            html = buildEventRow({
+                id, user: u, classes: r(['streamelements donation','streamlabs donation','kofi donation','patreon donation']),
+                action: ' donated', value: '$' + (5 + Math.floor(Math.random() * 95)) + '.00'
+            });
+            break;
+        case 'member':
+            html = buildEventRow({
+                id, user: u, classes: 'sub youtube',
+                action: ' became a member!', value: ''
+            });
+            break;
+    }
+
+    const el = insert(html);
+    if (kind === 'announce') anim(el); else animEvent(el);
+}
+
+function addTikTokGift() {
+    const gifts = [
+        {name:'Rose', coins:1, img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.png'},
+        {name:'Heart Me', coins:1, img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/cbc79846e498eb2a760e91ef22bbbf8e~tplv-obj.png'},
+        {name:'Hand Hearts', coins:100, img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/f9518fbbe38f67d8e498dab6b57c1ae8~tplv-obj.png'},
+        {name:'Universe', coins:34999, img:'https://p19-webcast.tiktokcdn.com/img/maliva/webcast-va/dcf6e88e84ff93fae0be68c3b7f19008~tplv-obj.png'}
+    ];
+    const g = r(gifts), u = r(U), id = 'm' + (n++);
+    const count = Math.floor(Math.random() * 5) + 1;
+    const totalCoins = count * g.coins;
+    let cls = 'gift tiktok';
+    if (totalCoins >= 1000) cls += ' bigger-than-1000';
+    else if (totalCoins >= 100) cls += ' bigger-than-100';
+    const html = `
+        <div id="${id}" data-user="${u}" class="event ${cls}">
+            <div class="message">
+                <div class="info">
+                    <span class="platform"></span>
+                    <span class="avatar"></span>
+                    <span class="user">${u}</span>
+                    <span class="action"> gifted you <strong>${count} ${g.name}</strong></span>
+                    <span class="value">
+                        <div class="gift-info">
+                            <span class="gift-image"><img src="${g.img}" alt="${g.name}"></span>
+                            <span class="gift-value"><img src="js/modules/tiktok/images/icon-tiktokcoin.svg" alt="Coins"> ${totalCoins}</span>
+                        </div>
+                    </span>
+                </div>
+            </div>
+        </div>`;
+    const el = insert(html);
+    animEvent(el);
+}
+
+// ---------- Consistency audit ----------
+function addEveryEvent() {
+    const kinds = ['sub','resub','gift','bits','bitsbig','raid','follow','donation','member'];
+    kinds.forEach((k, i) => setTimeout(() => addEvent(k), i * 300));
+    setTimeout(() => addTikTokGift(), kinds.length * 300);
+}
+
+// ---------- Flood ----------
+function flood(n = 20, ms = 80) {
+    for (let i = 0; i < n; i++) {
+        setTimeout(() => {
+            const roll = Math.random();
+            if (roll < 0.55) addMsg();
+            else if (roll < 0.65) addMsg(r(P), r(['role-sub','role-vip','role-mod','role-artist']));
+            else if (roll < 0.75) addLongMsg();
+            else if (roll < 0.82) addLongUsername();
+            else if (roll < 0.88) addMention();
+            else if (roll < 0.94) addEvent(r(['sub','resub','gift','bits','raid','follow','donation']));
+            else addTikTokGift();
+        }, i * ms);
+    }
+}
+
+// ---------- Seed ----------
+function seed() {
+    // baseline + roles + events + edge cases
+    addMsg();
+    addMsg('twitch', 'role-sub');
+    addMsg('twitch', 'role-vip');
+    addMsg('twitch', 'role-mod');
+    addMsg('twitch', 'role-artist');
+    addMsg('twitch', 'streamer');
+    addMention();
+    addLongMsg();
+    addLongUsername();
+    addEmoteHeavy();
+    addEvent('sub');
+    addEvent('bitsbig');
+    addEvent('raid');
+    addEvent('donation');
+    addEvent('follow');
+    addTikTokGift();
+    addMsg('kick');
+    addMsg('youtube');
+    addMsg('tiktok');
+}
+
+// Run seed once Framer Motion is wired (or immediately if it fails).
+// Delay seed slightly so ESM import resolves first.
+setTimeout(seed, 120);
+</script>
+</body>
+</html>
