@@ -362,51 +362,75 @@ body {
 
 
 /* =========================================================
-   ROLE ICONS — rendered as inline span (no pseudo clipping)
-   Use a separate element via ::before on .info with `flex: 0 0 auto`.
-   Role icon has NO text-shadow to avoid clipping.
-   ========================================================= */
+   ROLE ICONS — explicit `<span class="role-icon"></span>` inside `.info`.
+   Previously rendered via `.info::before`, but the pseudo was fragile:
+     - couldn't be selected or animated from JS without hacks
+     - coupled `.info` to a single ::before use case
+     - `content: none` suppression needed on every non-chat context
+   The element is now rendered once in the chat template (chat.html) so every
+   chat row carries it. Events don't include the element, so the suppression
+   rules that used to kill `.info::before` on events are gone too.
+   Icon is empty until a role class on the row triggers a `::before { content: ... }`
+   below. `display` toggles from `none` on `.role-icon` itself (idle) to
+   `inline-block` on the matching role's `.role-icon::before` (active). */
 
-#chat .item.chat .info::before {
-    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
-    font-weight: 900;
-    font-size: 10px;
+#chat .item.chat .info .role-icon {
     flex-shrink: 0;
     order: 4;
     display: none;
     line-height: 1;
+}
+#chat .item.chat .info .role-icon::before {
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 10px;
     text-shadow: none;
     filter: drop-shadow(0 0 4px currentColor);
 }
 /* Role icons — cascade from least → most prestigious so the highest role wins */
-#chat .item.chat.role-sub         .info::before { content: '\f005'; color: var(--role-sub);         display: inline-block; }  /* star */
-#chat .item.chat.role-founder     .info::before { content: '\f164'; color: var(--role-founder);     display: inline-block; }  /* thumbs-up */
-#chat .item.chat.role-artist      .info::before { content: '\f001'; color: var(--role-artist);      display: inline-block; }  /* music */
-#chat .item.chat.role-vip         .info::before { content: '\f3a5'; color: var(--role-vip);         display: inline-block; }  /* gem (diamond) */
-#chat .item.chat.role-turbo       .info::before { content: '\f0e7'; color: var(--role-turbo);       display: inline-block; }  /* bolt */
-#chat .item.chat.role-prime       .info::before { content: '\f521'; color: var(--role-prime);       display: inline-block; }  /* crown */
-#chat .item.chat.role-hype        .info::before { content: '\f238'; color: var(--role-hype);        display: inline-block; }  /* train */
-#chat .item.chat.role-bits-leader .info::before { content: '\f3a5'; color: var(--role-bits-leader); display: inline-block; }  /* gem */
-#chat .item.chat.role-verified    .info::before { content: '\f058'; color: var(--role-verified);    display: inline-block; }  /* circle-check */
-#chat .item.chat.role-partner     .info::before { content: '\f058'; color: var(--role-partner);     display: inline-block; }  /* circle-check */
-#chat .item.chat.role-global-mod  .info::before { content: '\f0ac'; color: var(--role-global-mod);  display: inline-block; }  /* globe */
-#chat .item.chat.role-admin       .info::before { content: '\f132'; color: var(--role-admin);       display: inline-block; }  /* shield */
-#chat .item.chat.role-staff       .info::before { content: '\f0ad'; color: var(--role-staff);       display: inline-block; }  /* wrench */
+#chat .item.chat.role-sub         .info .role-icon,
+#chat .item.chat.role-founder     .info .role-icon,
+#chat .item.chat.role-artist      .info .role-icon,
+#chat .item.chat.role-vip         .info .role-icon,
+#chat .item.chat.role-turbo       .info .role-icon,
+#chat .item.chat.role-prime       .info .role-icon,
+#chat .item.chat.role-hype        .info .role-icon,
+#chat .item.chat.role-bits-leader .info .role-icon,
+#chat .item.chat.role-verified    .info .role-icon,
+#chat .item.chat.role-partner     .info .role-icon,
+#chat .item.chat.role-global-mod  .info .role-icon,
+#chat .item.chat.role-admin       .info .role-icon,
+#chat .item.chat.role-staff       .info .role-icon,
+#chat .item.chat.role-mod         .info .role-icon,
+#chat .item.chat.role-lead-mod    .info .role-icon,
+#chat .item.chat.streamer         .info .role-icon { display: inline-block; }
+
+#chat .item.chat.role-sub         .info .role-icon::before { content: '\f005'; color: var(--role-sub); }          /* star */
+#chat .item.chat.role-founder     .info .role-icon::before { content: '\f164'; color: var(--role-founder); }      /* thumbs-up */
+#chat .item.chat.role-artist      .info .role-icon::before { content: '\f001'; color: var(--role-artist); }       /* music */
+#chat .item.chat.role-vip         .info .role-icon::before { content: '\f3a5'; color: var(--role-vip); }          /* gem */
+#chat .item.chat.role-turbo       .info .role-icon::before { content: '\f0e7'; color: var(--role-turbo); }        /* bolt */
+#chat .item.chat.role-prime       .info .role-icon::before { content: '\f521'; color: var(--role-prime); }        /* crown */
+#chat .item.chat.role-hype        .info .role-icon::before { content: '\f238'; color: var(--role-hype); }         /* train */
+#chat .item.chat.role-bits-leader .info .role-icon::before { content: '\f3a5'; color: var(--role-bits-leader); }  /* gem */
+#chat .item.chat.role-verified    .info .role-icon::before { content: '\f058'; color: var(--role-verified); }     /* circle-check */
+#chat .item.chat.role-partner     .info .role-icon::before { content: '\f058'; color: var(--role-partner); }      /* circle-check */
+#chat .item.chat.role-global-mod  .info .role-icon::before { content: '\f0ac'; color: var(--role-global-mod); }   /* globe */
+#chat .item.chat.role-admin       .info .role-icon::before { content: '\f132'; color: var(--role-admin); }        /* shield */
+#chat .item.chat.role-staff       .info .role-icon::before { content: '\f0ad'; color: var(--role-staff); }        /* wrench */
 
 /* POP: Moderator — gavel + green glow (FA Free compatible) */
-#chat .item.chat.role-mod .info::before {
+#chat .item.chat.role-mod .info .role-icon::before {
     content: '\f0e3';  /* gavel */
     color: var(--role-mod);
-    display: inline-block;
     font-size: 11px;
     filter: drop-shadow(0 0 5px var(--role-mod)) drop-shadow(0 0 1px rgba(0,0,0,0.8));
 }
 
 /* POP: Lead Moderator — shield-halved with strong glow, one tier above mod */
-#chat .item.chat.role-lead-mod .info::before {
+#chat .item.chat.role-lead-mod .info .role-icon::before {
     content: '\f3ed';  /* shield-halved */
     color: var(--role-mod);
-    display: inline-block;
     font-size: 12px;
     filter: drop-shadow(0 0 7px var(--role-mod)) drop-shadow(0 0 2px rgba(0,0,0,0.9));
 }
@@ -416,10 +440,9 @@ body {
    camera icon draws attention on insertion but settles afterwards. An
    always-animating icon on a permanent on-screen presence (the streamer
    posts constantly) flattens hierarchy when events/first-chatters also pulse. */
-#chat .item.chat.streamer .info::before {
+#chat .item.chat.streamer .info .role-icon::before {
     content: '\f030';  /* camera */
     color: var(--role-streamer);
-    display: inline-block;
     font-size: 11px;
     text-shadow: none;
     filter: drop-shadow(0 0 6px var(--role-streamer)) drop-shadow(0 0 2px rgba(0,0,0,0.85));
@@ -521,7 +544,7 @@ body {
 #chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .timestamp,
 #chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .pronouns,
 #chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .badges,
-#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info::before {
+#chat:not(.horizontal):not(.oneline) .item.chat.grouped .info .role-icon {
     visibility: hidden;
 }
 #chat:not(.horizontal):not(.oneline) .item.chat.grouped { margin-top: -2px !important; }
@@ -1400,7 +1423,7 @@ body {
     #chat-toasts .event,
     #chat-toasts .event .info .avatar,
     #chat .event .info .avatar,
-    #chat .item.chat.streamer .info::before,
+    #chat .item.chat.streamer .info .role-icon::before,
     #chat .item.first-chatter .actual-message::before,
     #chat .item .actual-message img,
     #chat .item .actual-message img.gigantified {
