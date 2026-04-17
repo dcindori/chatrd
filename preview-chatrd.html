@@ -517,13 +517,21 @@ function addEvent(kind) {
                 action: ' gifted', value: (5 + Math.floor(Math.random() * 45)) + ' Subs'
             });
             break;
-        case 'bits':
+        case 'bits': {
+            // Mirror the real module's bucket logic so preview covers the small-streamer
+            // escalation tiers (100/500/1000+). Amount range 50-550 here straddles
+            // tier-0 (no class), tier-1 (bigger-than-100), and tier-2 (bigger-than-500).
+            const amt = 50 + Math.floor(Math.random() * 500);
+            let tier = '';
+            if (amt >= 500) tier = ' bigger-than-500';
+            else if (amt >= 100) tier = ' bigger-than-100';
             html = buildEventRow({
-                id, user: u, classes: 'bits twitch',
-                action: ' cheered', value: (50 + Math.floor(Math.random() * 500)) + ' Bits',
+                id, user: u, classes: 'bits twitch' + tier,
+                action: ' cheered', value: amt + ' Bits',
                 message: r(M)
             });
             break;
+        }
         case 'bitsbig':
             html = buildEventRow({
                 id, user: u, classes: 'bits twitch bigger-than-1000',
