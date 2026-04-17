@@ -1055,7 +1055,12 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Value pill — pushed to the right edge of .info */
+/* Value pill — pushed to the right edge of .info.
+   Text color is near-white so digits stay legible even when the accent is warm
+   (bits amber, StreamElements green, hype orange) — accent-on-accent at 18%
+   alpha was muddy over bright gameplay. The accent still carries identity via
+   the background tint + 1px inset ring, and we lift alpha a touch (22% / 55%)
+   so the pill reads as a solid chip rather than a washed-out swatch. */
 #chat .event .value,
 #chat-toasts .event .value {
     margin-left: auto !important;
@@ -1070,9 +1075,10 @@ body {
     letter-spacing: -0.006em;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    color: var(--evt-accent) !important;
-    background: color-mix(in srgb, var(--evt-accent) 18%, transparent) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 45%, transparent) !important;
+    color: rgba(255,255,255,0.96) !important;
+    background: color-mix(in srgb, var(--evt-accent) 22%, rgba(0,0,0,0.35)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55);
     flex-shrink: 0;
     font-family: var(--chatrd-mono);
     animation: none !important;
@@ -1226,9 +1232,10 @@ body {
     font-size: var(--chatrd-size-pill) !important;
     font-weight: 700 !important;
     line-height: 1.4 !important;
-    color: #fbbf24 !important;
-    background: rgba(251,191,36,0.18) !important;
-    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.45) !important;
+    color: rgba(255,255,255,0.96) !important;
+    background: rgba(251,191,36,0.28) !important;
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.60) !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55);
     font-family: var(--chatrd-mono) !important;
     font-variant-numeric: tabular-nums;
 }
