@@ -846,13 +846,18 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Accent duo variants */
-#chat .item.announcement.green,
-#chat-toasts .item.announcement.green  { --evt-accent: #22c55e; --evt-accent-2: #86efac; }
-#chat .item.announcement.orange,
-#chat-toasts .item.announcement.orange { --evt-accent: #f97316; --evt-accent-2: #fbbf24; }
-#chat .item.announcement.purple,
-#chat-toasts .item.announcement.purple { --evt-accent: #a855f7; --evt-accent-2: #ec4899; }
+/* Accent variants — defined ONCE without a `#chat` / `#chat-toasts` prefix
+   so both inline and toast announcement rows pick the same accent. The same
+   classes are also reused by `.event.announcement.*` (announcement rendered
+   through the event template), so one rule covers every context. */
+.item.announcement.green,
+.event.announcement.green  { --evt-accent: #22c55e; --evt-accent-2: #86efac; }
+.item.announcement.orange,
+.event.announcement.orange { --evt-accent: #f97316; --evt-accent-2: #fbbf24; }
+.item.announcement.purple,
+.event.announcement.purple { --evt-accent: #a855f7; --evt-accent-2: #ec4899; }
+.item.announcement.blue,
+.event.announcement.blue   { --evt-accent: #3b82f6; }
 
 
 /* =========================================================
@@ -1179,15 +1184,10 @@ body {
 #chat .event.kick:not(.sub),
 #chat-toasts .event.kick:not(.sub) { --evt-accent: var(--p-kick); }
 
-/* Announcement color variants override platform accent for .event.announcement */
-#chat .event.announcement.green,
-#chat-toasts .event.announcement.green  { --evt-accent: #22c55e; }
-#chat .event.announcement.orange,
-#chat-toasts .event.announcement.orange { --evt-accent: #f97316; }
-#chat .event.announcement.purple,
-#chat-toasts .event.announcement.purple { --evt-accent: #a855f7; }
-#chat .event.announcement.blue,
-#chat-toasts .event.announcement.blue   { --evt-accent: #3b82f6; }
+/* Announcement variant accents (`.green` / `.orange` / `.purple` / `.blue`)
+   are declared once in the ANNOUNCEMENT section above and apply to both
+   `.item.announcement.*` and `.event.announcement.*` via unprefixed
+   selectors. No need to redeclare here. */
 
 
 /* ---------- Bits big — pulse on chip only, not whole row ----------
@@ -1303,65 +1303,14 @@ body {
     animation: none;
 }
 
-#chat-toasts .event .message {
-    min-height: 40px !important;
-    padding: 8px 12px 8px 48px !important;
-    /* Opaque-ish surface instead of backdrop-filter. The OBS browser source
-       composites on top of game capture, so backdrop-filter has no backdrop
-       pixels to blur — it was pure overhead. A slightly heavier shadow +
-       inner hairline reconstitutes the card depth without the GPU cost. */
-    background: var(--surface-2) !important;
-    border-radius: var(--chatrd-radius-md) !important;
-    box-shadow:
-        0 6px 22px rgba(0,0,0,0.55),
-        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 30%, rgba(255,255,255,0.10)) !important;
-    /* Flex column centers .info (+ optional .actual-message) vertically so
-       the text baseline sits on the chip/box center instead of hugging the
-       top padding when the content is shorter than min-height. */
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-}
-
-/* Toast chip bigger + brighter */
-#chat-toasts .event .info .avatar {
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    left: 12px !important;
-    border-radius: var(--chatrd-radius-md) !important;
-    background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0,0,0,0.4)) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent), 0 2px 6px rgba(0,0,0,0.25) !important;
-}
-#chat-toasts .event .info .avatar:empty::before {
-    font-size: 14px;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.45) !important;
-}
-#chat-toasts .event .info .avatar img {
-    width: 28px !important;
-    height: 28px !important;
-}
-
-/* Toast rail — brighter + thicker gradient feel */
-#chat-toasts .event .message::before {
-    opacity: 1;
-    box-shadow: 0 0 8px color-mix(in srgb, var(--evt-accent) 60%, transparent);
-}
-
-/* Toast user color a bit hotter */
-#chat-toasts .event .user { font-weight: 800 !important; }
-
-/* Toast tiktok gift image a bit bigger */
-#chat-toasts .event.tiktok.gift .value span.gift-image img { height: 24px !important; }
-
-/* Announcement toast variant — matches the elevated event-toast shell
-   (bigger chip, brighter rail, surface-2 card). */
-#chat-toasts .item.announcement {
-    /* Matches `.event` toasts — no cursor interaction. */
-    margin: 0 !important;
-    animation: none;
-}
+/* Toast shell — applied to both event toasts AND announcement toasts. These
+   used to be two near-identical rule blocks; consolidated here so the
+   elevated-card treatment (surface-2 + shadow + inset accent ring + centered
+   content column) can only drift in one place.
+   `backdrop-filter` was removed earlier — OBS browser source has no
+   backdrop pixels to blur, so it was pure GPU overhead. The heavier shadow
+   + inset hairline reconstitute card depth without the cost. */
+#chat-toasts .event .message,
 #chat-toasts .item.announcement .message {
     min-height: 40px !important;
     padding: 8px 12px 8px 48px !important;
@@ -1374,6 +1323,10 @@ body {
     flex-direction: column !important;
     justify-content: center !important;
 }
+
+/* Toast chip — bigger + brighter than the inline variant, shared between
+   event toasts and announcement toasts. */
+#chat-toasts .event .info .avatar,
 #chat-toasts .item.announcement .info .avatar,
 #chat-toasts .item.announcement .info .avatar:empty {
     width: 28px !important;
@@ -1384,18 +1337,37 @@ body {
     background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0,0,0,0.4)) !important;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent), 0 2px 6px rgba(0,0,0,0.25) !important;
 }
+#chat-toasts .event .info .avatar:empty::before,
 #chat-toasts .item.announcement .info .avatar:empty::before {
     font-size: 14px;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0,0,0,0.45) !important;
 }
-#chat-toasts .item.announcement .info .user {
-    font-weight: 800 !important;
+#chat-toasts .event .info .avatar img {
+    width: 28px !important;
+    height: 28px !important;
 }
-/* Toast rail — brighter + glowing, same upgrade as `.event` toasts. */
+
+/* Toast rail — brighter + glowing, shared. */
+#chat-toasts .event .message::before,
 #chat-toasts .item.announcement .message::before {
     opacity: 1;
     box-shadow: 0 0 8px color-mix(in srgb, var(--evt-accent) 60%, transparent);
+}
+
+/* Toast user weight — shared. */
+#chat-toasts .event .user,
+#chat-toasts .item.announcement .info .user {
+    font-weight: 800 !important;
+}
+
+/* Toast tiktok gift image a bit bigger */
+#chat-toasts .event.tiktok.gift .value span.gift-image img { height: 24px !important; }
+
+/* Announcement toast — no cursor interaction, matches .event toasts. */
+#chat-toasts .item.announcement {
+    margin: 0 !important;
+    animation: none;
 }
 
 
