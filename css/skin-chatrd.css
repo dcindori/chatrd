@@ -551,13 +551,24 @@ body {
     padding: 2px 4px !important;
     margin: 1px 0 !important;
 }
+/* First-chatter signal lives in the OUTLINE channel only (no fill). Dashed
+   1px amber outline + soft amber glow reads as "new person" without occupying
+   the background channel. That channel is reserved for @mention so a
+   first-chatter who mentions the streamer shows BOTH signals: amber dashed
+   outline (first-chatter) + platform-tinted fill (mention), without either
+   cancelling the other. Role username color stays intact as the third
+   independent channel.
+   `outline-offset: -1px` tucks the dash onto the rounded-corner edge (modern
+   browsers respect `border-radius` for outlines) so it sits exactly where an
+   inset box-shadow would without shifting content. */
 #chat:not(.horizontal):not(.oneline) .item.chat.first-chatter .actual-message {
     max-width: min(100%, 60ch);
     padding: 2px 10px 2px 8px !important;
-    background: rgba(251,191,36,0.18) !important;
+    background: transparent !important;
     border-radius: var(--chatrd-radius-md) !important;
-    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.55),
-                0 0 14px rgba(251,191,36,0.18) !important;
+    outline: 1px dashed rgba(251,191,36,0.80) !important;
+    outline-offset: -1px;
+    box-shadow: 0 0 14px rgba(251,191,36,0.20) !important;
     position: relative;
 }
 /* Leading icon — "user-plus" reads as "new person joining", clearer than a sparkle. */
@@ -628,12 +639,16 @@ body {
     padding: 2px 4px !important;
     margin: 1px 0 !important;
 }
+/* @mention signal lives in the FILL channel only (no ring / no outline).
+   Platform-colored translucent fill carries the signal; the edge is defined
+   by the fill's alpha transition against the chat background. Keeping this
+   channel clean means a mention + first-chatter combo shows both at once:
+   amber dashed outline over the platform fill, neither signal lost. */
 #chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .actual-message {
     max-width: min(100%, 60ch);
     padding: 2px 10px !important;
-    background: rgba(var(--mention-color), 0.20) !important;
+    background: rgba(var(--mention-color), 0.22) !important;
     border-radius: var(--chatrd-radius-md) !important;
-    box-shadow: inset 0 0 0 1px rgba(var(--mention-color), 0.55) !important;
 }
 #chat:not(.horizontal):not(.oneline) .item.youtube.chat.streamer-mentioned .message { --mention-color: 255,0,51; }
 #chat:not(.horizontal):not(.oneline) .item.tiktok.chat.streamer-mentioned  .message { --mention-color: 255,0,80; }
