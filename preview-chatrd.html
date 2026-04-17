@@ -498,78 +498,45 @@ function addEvent(kind) {
     const id = 'm' + (n++);
     let html = '';
 
-    // Mirror the unified tier helper from js/modules/twitch/module.js so the
-    // preview exercises the same `tier-1` / `tier-2` / `tier-3` escalation
-    // layer that production triggers. Thresholds per event type match the
-    // real module's small-streamer calibration.
-    const tierFor = (amount, [t1, t2, t3]) => {
-        if (amount >= t3) return ' tier-3';
-        if (amount >= t2) return ' tier-2';
-        if (amount >= t1) return ' tier-1';
-        return '';
-    };
-
     switch (kind) {
-        case 'sub': {
-            // Randomize sub plan so preview rotates through Tier 1 / 2 / 3.
-            const plan = 1 + Math.floor(Math.random() * 3);
-            const tier = plan >= 3 ? ' tier-3' : plan >= 2 ? ' tier-2' : '';
+        case 'sub':
             html = buildEventRow({
-                id, user: u, classes: 'sub twitch' + tier,
-                action: ' just subscribed!', value: 'Tier ' + plan
+                id, user: u, classes: 'sub twitch',
+                action: ' just subscribed!', value: 'Tier 1'
             });
             break;
-        }
-        case 'resub': {
-            const plan = 1 + Math.floor(Math.random() * 3);
-            const tier = plan >= 3 ? ' tier-3' : plan >= 2 ? ' tier-2' : '';
+        case 'resub':
             html = buildEventRow({
-                id, user: u, classes: 'resub twitch' + tier,
-                action: ' resubscribed for', value: (2 + Math.floor(Math.random() * 40)) + ' Months (Tier ' + plan + ')'
+                id, user: u, classes: 'resub twitch',
+                action: ' resubscribed for', value: (2 + Math.floor(Math.random() * 40)) + ' Months'
             });
             break;
-        }
-        case 'gift': {
-            // Community gift bomb — tier on subs count (5/10/25).
-            const subs = 5 + Math.floor(Math.random() * 45);
+        case 'gift':
             html = buildEventRow({
-                id, user: u, classes: 'gift twitch' + tierFor(subs, [5, 10, 25]),
-                action: ' gifted', value: subs + ' Subs'
+                id, user: u, classes: 'gift twitch',
+                action: ' gifted', value: (5 + Math.floor(Math.random() * 45)) + ' Subs'
             });
             break;
-        }
-        case 'bits': {
-            // Mirrors the real module: emit both `bigger-than-N` (legacy bucket)
-            // and `tier-N` (unified escalation) so preview matches production.
-            const amt = 50 + Math.floor(Math.random() * 500);
-            let bucket = '';
-            if (amt >= 500) bucket = ' bigger-than-500';
-            else if (amt >= 100) bucket = ' bigger-than-100';
+        case 'bits':
             html = buildEventRow({
-                id, user: u, classes: 'bits twitch' + bucket + tierFor(amt, [100, 500, 1000]),
-                action: ' cheered', value: amt + ' Bits',
+                id, user: u, classes: 'bits twitch',
+                action: ' cheered', value: (50 + Math.floor(Math.random() * 500)) + ' Bits',
                 message: r(M)
             });
             break;
-        }
-        case 'bitsbig': {
-            const amt = 1000 + Math.floor(Math.random() * 9000);
+        case 'bitsbig':
             html = buildEventRow({
-                id, user: u, classes: 'bits twitch bigger-than-1000 tier-3',
-                action: ' cheered', value: amt + ' Bits',
+                id, user: u, classes: 'bits twitch bigger-than-1000',
+                action: ' cheered', value: (1000 + Math.floor(Math.random() * 9000)) + ' Bits',
                 message: 'Keep it up! Love the stream!'
             });
             break;
-        }
-        case 'raid': {
-            // Tier on viewer count (5/20/50).
-            const viewers = 10 + Math.floor(Math.random() * 500);
+        case 'raid':
             html = buildEventRow({
-                id, user: u, classes: 'raid twitch' + tierFor(viewers, [5, 20, 50]),
-                action: ' raided with', value: viewers + ' Viewers'
+                id, user: u, classes: 'raid twitch',
+                action: ' raided with', value: (10 + Math.floor(Math.random() * 500)) + ' Viewers'
             });
             break;
-        }
         case 'follow': {
             const plat = r(P);
             html = buildEventRow({

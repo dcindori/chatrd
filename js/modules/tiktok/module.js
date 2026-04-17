@@ -506,11 +506,6 @@ async function tiktokGiftMessage(data) {
 
     const tikTokGiftMatch = tiktokGiftsClasses.find(lv => coins >= lv.min && coins <= lv.max);
     classes.push(tikTokGiftMatch.class);
-    // Unified escalation tier (see chatrd skin H10). TikTok uses total coins
-    // as the magnitude — same 100/500/1000 threshold ladder as Twitch bits.
-    if (coins >= 1000) classes.push('tier-3');
-    else if (coins >= 500) classes.push('tier-2');
-    else if (coins >= 100) classes.push('tier-1');
 
     user.textContent = data.nickname;
     action.innerHTML = ` gifted you <strong>${data.repeatCount} ${data.giftName}</strong>`;
