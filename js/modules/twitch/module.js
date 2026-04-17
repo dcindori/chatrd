@@ -44,6 +44,31 @@ const bitsGiftsClasses = [
     { min: 100000,  max: 99999999999, class: 'bigger-than-100000' },
 ];
 
+// Unified tier escalation — emits one of `tier-1` / `tier-2` / `tier-3` (or
+// null) based on the amount. Kept alongside the existing `bigger-than-N`
+// bucket ladder because other skins (stream, stream-bubbles) key off those;
+// the chatrd skin keys off the unified tier class so event types with
+// different units (bits, viewers, subs, sub-tier) can all drive the same
+// visual escalation layer. Thresholds are small-streamer calibrated — a
+// 2500-bit cheer should feel different from a 150-bit cheer, not identical.
+function tierClassFor(amount, [t1, t2, t3]) {
+    if (amount >= t3) return 'tier-3';
+    if (amount >= t2) return 'tier-2';
+    if (amount >= t1) return 'tier-1';
+    return null;
+}
+// Twitch sub plan → tier mapping. sub_tier values are 1000 / 2000 / 3000
+// (Tier 1 / 2 / 3). Prime is functionally equivalent to Tier 1 (free to the
+// gifter) so it stays untiered. Tier 1 is baseline so we don't escalate it
+// either — only Tier 2 and Tier 3 get visual escalation.
+function subTierClass(subTier, isPrime) {
+    if (isPrime) return null;
+    const t = Math.floor(subTier / 1000);
+    if (t >= 3) return 'tier-3';
+    if (t >= 2) return 'tier-2';
+    return null;
+}
+
 // TWITCH EVENTS HANDLERS
 
 const twitchMessageHandlers = {
@@ -629,6 +654,8 @@ async function twitchBitsMessage(data) {
     
     const bitsMatch = bitsGiftsClasses.find(lv => data.message.bits >= lv.min && data.message.bits <= lv.max);
     classes.push(bitsMatch.class);
+    const bitsTier = tierClassFor(data.message.bits, [100, 500, 1000]);
+    if (bitsTier) classes.push(bitsTier);
 
     value.innerHTML = `
         <div class="gift-info">
@@ -668,11 +695,13 @@ async function twitchSubMessage(data) {
     );
 
     const classes = ['twitch', 'sub'];
+    const subTier = subTierClass(data.sub_tier, data.is_prime);
+    if (subTier) classes.push(subTier);
 
     header.remove();
     message.remove();
 
-    
+
     user.textContent = data.user.name;
 
     action.innerHTML = ` subscribed for `;
@@ -716,9 +745,11 @@ async function twitchReSubMessage(data) {
     );
 
     const classes = ['twitch', 'resub'];
-    
+    const resubTier = subTierClass(data.subTier, data.isPrime);
+    if (resubTier) classes.push(resubTier);
+
     header.remove();
-    
+
     user.textContent = data.user.name;
 
     action.innerHTML = ` subscribed for `;
@@ -816,6 +847,8 @@ async function twitchGiftBombMessage(data) {
     );
 
     const classes = ['twitch', 'giftbomb'];
+    const giftbombTier = tierClassFor(data.total, [5, 10, 25]);
+    if (giftbombTier) classes.push(giftbombTier);
 
     header.remove();
     value.remove();
@@ -855,11 +888,13 @@ async function twitchRaidMessage(data) {
     );
 
     const classes = ['twitch', 'raid'];
+    const raidTier = tierClassFor(data.viewers, [5, 20, 50]);
+    if (raidTier) classes.push(raidTier);
 
     header.remove();
     message.remove();
 
-    
+
     user.textContent = data.from_broadcaster_user_name;
 
     var viewers = data.viewers > 1 ? 'viewers' : 'viewer';
