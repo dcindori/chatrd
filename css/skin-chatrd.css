@@ -50,7 +50,7 @@
     --chatrd-mono: 'JetBrains Mono', ui-monospace, monospace;
     --chatrd-size-chat:  14px;
     --chatrd-size-user:  13px;
-    --chatrd-size-meta:  10px;
+    --chatrd-size-meta:  11px;
     --chatrd-size-event: 14px;
     --chatrd-size-pill:  11px;
     --chatrd-line:       1.42;
@@ -199,9 +199,13 @@ body {
 #chat .item .shared-chat:empty,
 #chat .item .header:empty,
 #chat .item .reply:empty,
-#chat .item .info .pronouns:empty,
 #chat .item .info .badges:empty,
 #chat .item .info .timestamp:empty { display: none !important; }
+
+/* Pronouns — hidden globally. The streamer does not use them and the mini-badge
+   chrome adds horizontal noise in the user column. */
+#chat .item .info .pronouns,
+#chat-toasts .info .pronouns { display: none !important; }
 #chat .item.chat .avatar,
 #chat .item.chat .avatar:empty { display: none !important; }
 
@@ -229,7 +233,6 @@ body {
 
 /* Ordering inside info flex */
 #chat .item .info .timestamp { order: 0; flex-shrink: 0; }
-#chat .item .info .pronouns  { order: 1; flex-shrink: 0; }
 #chat .item .info .badges    { order: 2; flex-shrink: 0; display: flex !important; align-items: center; gap: 2px; }
 
 /* Platform tile — absolutely positioned just past the right edge of .info,
@@ -475,9 +478,11 @@ body {
 
 #chat .item .message .actual-message a {
     color: #93c5fd !important;
-    text-decoration: none !important;
     font-weight: 500 !important;
-    border-bottom: 1px dashed rgba(147,197,253,0.4);
+    text-decoration: underline !important;
+    text-decoration-color: rgba(147,197,253,0.45) !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 2px !important;
 }
 
 
@@ -494,17 +499,6 @@ body {
     background: transparent !important;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
-}
-#chat .item .pronouns {
-    background: rgba(255,255,255,0.06) !important;
-    padding: 0 4px !important;
-    font-size: 9px !important;
-    border-radius: 3px !important;
-    color: var(--fg-dim) !important;
-    font-weight: 600;
-    height: 14px;
-    display: inline-flex !important;
-    align-items: center;
 }
 #chat .item .badges { height: auto !important; }
 #chat .item .badges img {
@@ -560,8 +554,6 @@ body {
     border-radius: var(--chatrd-radius-md) !important;
     box-shadow: inset 0 0 0 1px rgba(251,191,36,0.55),
                 0 0 14px rgba(251,191,36,0.18) !important;
-    -webkit-backdrop-filter: blur(2px);
-            backdrop-filter: blur(2px);
     position: relative;
 }
 /* Leading icon — "user-plus" reads as "new person joining", clearer than a sparkle. */
@@ -638,8 +630,6 @@ body {
     background: rgba(var(--mention-color), 0.20) !important;
     border-radius: var(--chatrd-radius-md) !important;
     box-shadow: inset 0 0 0 1px rgba(var(--mention-color), 0.55) !important;
-    -webkit-backdrop-filter: blur(2px);
-            backdrop-filter: blur(2px);
 }
 #chat:not(.horizontal):not(.oneline) .item.youtube.chat.streamer-mentioned .message { --mention-color: 255,0,51; }
 #chat:not(.horizontal):not(.oneline) .item.tiktok.chat.streamer-mentioned  .message { --mention-color: 255,0,80; }
@@ -663,7 +653,10 @@ body {
     text-shadow: var(--glow-text) !important;
     -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
     paint-order: stroke fill;
-    --evt-accent: #3b82f6;
+    /* Cyan instead of blue — the old `#3b82f6` was too close to our link blue
+       (`#93c5fd`), so an announcement row with a link became a wash of
+       same-hue text. Cyan separates the two signals cleanly. */
+    --evt-accent: #06b6d4;
 }
 
 /* Inline .message — matches `.event .message`, but flex-row so that .info
@@ -1279,13 +1272,15 @@ body {
 #chat-toasts .event .message {
     min-height: 40px !important;
     padding: 8px 12px 8px 48px !important;
+    /* Opaque-ish surface instead of backdrop-filter. The OBS browser source
+       composites on top of game capture, so backdrop-filter has no backdrop
+       pixels to blur — it was pure overhead. A slightly heavier shadow +
+       inner hairline reconstitutes the card depth without the GPU cost. */
     background: var(--surface-2) !important;
     border-radius: var(--chatrd-radius-md) !important;
     box-shadow:
-        0 4px 20px rgba(0,0,0,0.45),
-        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 25%, rgba(255,255,255,0.08)) !important;
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
-            backdrop-filter: blur(10px) saturate(130%);
+        0 6px 22px rgba(0,0,0,0.55),
+        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 30%, rgba(255,255,255,0.10)) !important;
     /* Flex column centers .info (+ optional .actual-message) vertically so
        the text baseline sits on the chip/box center instead of hugging the
        top padding when the content is shorter than min-height. */
@@ -1339,10 +1334,8 @@ body {
     background: var(--surface-2) !important;
     border-radius: var(--chatrd-radius-md) !important;
     box-shadow:
-        0 4px 20px rgba(0,0,0,0.45),
-        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 25%, rgba(255,255,255,0.08)) !important;
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
-            backdrop-filter: blur(10px) saturate(130%);
+        0 6px 22px rgba(0,0,0,0.55),
+        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 30%, rgba(255,255,255,0.10)) !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
