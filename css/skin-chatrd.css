@@ -65,9 +65,25 @@
     --surface-2:    rgba(20,20,28, 0.82);
     --bg-opacity:   0.55;
 
-    /* ---------- READABILITY ---------- */
-    /* Tight shadow — legible on light + dark scenes without heavy halo */
-    --glow-text:   0 1px 1px rgba(0,0,0,0.55), 0 0 2px rgba(0,0,0,0.45);
+    /* ---------- READABILITY ----------
+       The overlay sits on live gameplay, so a tight shadow isn't enough — we
+       need a hard 1px black outline that survives against bright highlights
+       (snow, muzzle flashes, UI) plus a soft drop-shadow for depth. We pair:
+         • `--glow-text`  — 4-corner 1px outline + soft drop shadow. Set on
+           every text-bearing element.
+         • `paint-order: stroke fill` + `-webkit-text-stroke` at the row level
+           — a hairline anti-alias stroke that SURVIVES role-specific
+           text-shadow overrides (mod glow, streamer glow, etc.), so usernames
+           stay readable even when their glow gets repainted.
+       The outline is four offsets (not eight) because diagonals already plug
+       the 90° gaps when combined with the soft shadow — half the shadow
+       passes, same legibility. */
+    --glow-text:
+        -1px -1px 0 rgba(0,0,0,0.92),
+         1px -1px 0 rgba(0,0,0,0.92),
+        -1px  1px 0 rgba(0,0,0,0.92),
+         1px  1px 0 rgba(0,0,0,0.92),
+         0 2px 4px rgba(0,0,0,0.85);
     --glow-stroke: -0.3px -0.3px 0 rgba(0,0,0,0.55), 0.3px -0.3px 0 rgba(0,0,0,0.55), -0.3px 0.3px 0 rgba(0,0,0,0.55), 0.3px 0.3px 0 rgba(0,0,0,0.55);
     --ring:        0 0 0 1px rgba(255,255,255,0.08);
     --shadow-sm:   0 1px 2px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04) inset;
@@ -99,6 +115,17 @@ body {
     scrollbar-color: rgba(255,255,255,0.08) transparent;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
             mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
+    /* OBS overlay — no cursor, no hit-testing. Disabling pointer-events on
+       the whole chat container skips per-frame hover/active-state tracking
+       for every message, emote, link, and pseudo inside it. Moderation
+       buttons opt back in with `pointer-events: auto`. */
+    pointer-events: none;
+}
+/* Hit-testing escape hatches — only the elements that actually need cursor
+   input when their opt-in flag is on. Everything else stays non-interactive. */
+#chat .item .chatmoderation,
+#chat .item .chatmoderation button {
+    pointer-events: auto;
 }
 #chat::-webkit-scrollbar { width: 3px; }
 #chat::-webkit-scrollbar-track { background: transparent; }
@@ -115,6 +142,18 @@ body {
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
     text-shadow: var(--glow-text) !important;
+    /* Hairline stroke that sits UNDER the fill (paint-order) and survives any
+       per-role text-shadow override. Subpixel width keeps small text sharp. */
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    paint-order: stroke fill;
+    /* Skip paint/layout work for rows that scroll out of the viewport.
+       `contain-intrinsic-size` reserves placeholder space so the scroller
+       doesn't jump when rows get re-rendered. 28px matches our min-height;
+       multi-line rows briefly under-reserve on first paint but the browser
+       corrects on the next layout pass — cheap tradeoff for skipping the
+       text-shadow/stroke work on every off-screen row. */
+    content-visibility: auto;
+    contain-intrinsic-size: 0 28px;
 }
 
 #chat:not(.horizontal):not(.oneline) .item {
@@ -402,41 +441,36 @@ body {
     font-size: var(--chatrd-size-chat);
 }
 
-/* ---------- Twitch-style emotes: white sticker outline + pop-in ---------- */
+/* ---------- Emotes — performance-first ----------
+   The previous iteration layered five `drop-shadow()` filters to fake a white
+   sticker outline and ran a spring pop-in on every image. Each drop-shadow is
+   a separate GPU compositing pass, and the per-emote entrance animation is
+   fired once per <img>, so a spammy BTTV line could burn through tens of
+   compositing passes per frame. We keep a single soft drop-shadow for depth,
+   drop the multi-layer outline, drop the pop-in (the parent row already has
+   an entrance animation), and drop the hover transform (this is an OBS
+   overlay — there's no cursor to hover with). */
 
 #chat .item .actual-message img {
     vertical-align: middle;
     height: 22px !important;
     max-width: 100%;
     margin: -2px 1px !important;
-    /* sticker white outline via layered drop-shadow */
-    filter:
-        drop-shadow(0  1px 0 rgba(255,255,255,0.95))
-        drop-shadow(0 -1px 0 rgba(255,255,255,0.95))
-        drop-shadow( 1px 0 0 rgba(255,255,255,0.95))
-        drop-shadow(-1px 0 0 rgba(255,255,255,0.95))
-        drop-shadow(0 2px 3px rgba(0,0,0,0.45));
-    transform-origin: center;
-    animation: chatrd-emote-pop 360ms var(--ease-spring) both;
-    transition: transform 180ms var(--ease-spring);
-}
-#chat .item .actual-message img:hover {
-    transform: scale(1.12) rotate(-3deg);
-}
-
-@keyframes chatrd-emote-pop {
-    0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
-    60%  { opacity: 1; transform: scale(1.14) rotate(3deg); }
-    100% { opacity: 1; transform: none; }
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
 }
 
 #chat .item .actual-message img.gigantified {
     height: 56px !important;
     animation: chatrd-emote-float 3s ease-in-out infinite;
+    /* Hint the compositor: the floater only changes transform, so promote
+       gigantified emotes (which are rare) to their own layer. We deliberately
+       do NOT set will-change on regular emotes — that would allocate a layer
+       per inline image and hurt, not help. */
+    will-change: transform;
 }
 @keyframes chatrd-emote-float {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50%      { transform: translateY(-3px) rotate(2deg); }
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
 }
 
 #chat .item .message .actual-message a {
@@ -502,6 +536,15 @@ body {
 /* First-time chatter — same bubble pattern as mention for perfect alignment.
    The "First-time Chatter" banner is hidden; the status is conveyed via a
    leading sparkle chip inside the bubble + amber tint + subtle glow. */
+
+/* Reset per-platform module margin hacks that inset first-chatter rows
+   (e.g. Twitch's `margin: 0 10px`) — we want the row aligned to the chat
+   gutter just like every other row so the user + tile columns line up. */
+#chat:not(.horizontal):not(.oneline) .item.chat.first-chatter {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
 #chat:not(.horizontal):not(.oneline) .item.chat.first-chatter .message {
     grid-template-columns: var(--chatrd-user-col) var(--chatrd-tile) max-content !important;
     background: none !important;
@@ -608,170 +651,196 @@ body {
 
 /* Announcement — shares event card treatment (mesh + rail + icon chip).
    Default accent is blue; role classes (.green/.orange/.purple) swap the duo. */
-#chat .item.announcement {
-    margin: 6px 0 !important;
-    font-size: var(--chatrd-size-event) !important;
+/* Announcements share the event card skeleton:
+   [3px rail] [icon chip] [user · action] [message text]
+   Only the glyph (bullhorn) and default accent (blue) distinguish them. */
+#chat .item.announcement,
+#chat-toasts .item.announcement {
+    font-family: var(--chatrd-font) !important;
+    font-size: var(--chatrd-size-chat) !important;
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
     text-shadow: var(--glow-text) !important;
-    --evt-accent:   #3b82f6;
-    --evt-accent-2: #60a5fa;
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    paint-order: stroke fill;
+    --evt-accent: #3b82f6;
 }
-#chat:not(.horizontal):not(.oneline) .item.announcement .message {
+
+/* Inline .message — matches `.event .message`, but flex-row so that .info
+   (which holds the user) and .actual-message (which sits beside .info in
+   the announcement template) collapse onto a single row like events do. */
+#chat:not(.horizontal):not(.oneline) .item.announcement .message,
+#chat-toasts .item.announcement .message {
     display: flex !important;
-    grid-template-columns: none !important;
     align-items: center !important;
-    gap: 8px !important;
-    flex-wrap: nowrap;
-    background: rgba(10,10,16, 0.88) !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+    position: relative !important;
+    padding: 3px 10px 3px 38px !important;
+    border-radius: var(--chatrd-radius-sm) !important;
+    background: transparent !important;
     border: none !important;
     outline: none !important;
-    border-radius: 8px !important;
-    padding: 4px 12px 4px 36px !important;
-    min-height: 28px !important;
-    position: relative;
-    isolation: isolate;
-    contain: paint;
-    box-shadow:
-        0 6px 14px rgba(0,0,0,0.40),
-        inset 0 0 0 1px rgba(255,255,255,0.06),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: none !important;
     box-sizing: border-box !important;
+    min-height: 24px !important;
     max-width: 100%;
-    -webkit-backdrop-filter: blur(6px) saturate(130%);
-            backdrop-filter: blur(6px) saturate(130%);
-    overflow: hidden !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+    isolation: auto;
+    contain: none;
+    animation: none !important;
 }
-/* Mesh blob layer */
-#chat .item.announcement .message::before {
-    content: '';
-    position: absolute;
-    inset: -35%;
-    background:
-        radial-gradient(55% 45% at 18% 40%, var(--evt-accent)   0%, transparent 62%),
-        radial-gradient(50% 42% at 82% 65%, var(--evt-accent-2) 0%, transparent 58%);
-    filter: blur(26px) saturate(150%);
-    opacity: 0.65;
-    z-index: 0;
-    pointer-events: none;
-    animation: chatrd-mesh 9s ease-in-out infinite alternate;
-    will-change: transform;
-    top: auto; /* override the 6px/bottom:6px rule from prior cascade */
-    left: -35%;
-    right: -35%;
-    bottom: -35%;
-    width: auto;
-    border-radius: 0;
-    box-shadow: none;
-}
-/* Flowing accent rail */
-#chat .item.announcement .message::after {
-    content: '';
-    position: absolute;
+
+/* Solid 3px accent rail — same as events. */
+#chat .item.announcement .message::before,
+#chat-toasts .item.announcement .message::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
     left: 0; top: 0; bottom: 0;
     width: 3px;
-    background: linear-gradient(180deg,
-        transparent 0%,
-        var(--evt-accent) 25%,
-        var(--evt-accent-2) 50%,
-        var(--evt-accent) 75%,
-        transparent 100%);
-    background-size: 100% 220%;
-    animation: chatrd-rail 3s linear infinite;
-    z-index: 2;
-    pointer-events: none;
+    background: var(--evt-accent) !important;
+    border-radius: 2px;
+    opacity: 0.85;
+    inset: 0 auto 0 0 !important;
+    right: auto !important;
+    animation: none !important;
+    filter: none !important;
+    z-index: 1 !important;
+    margin: 0 !important;
 }
-#chat .item.announcement .info,
-#chat .item.announcement .actual-message { position: relative; z-index: 1; }
-#chat:not(.horizontal):not(.oneline) .item.announcement .info {
+#chat .item.announcement .message::after,
+#chat-toasts .item.announcement .message::after {
+    content: none !important;
+    display: none !important;
+    animation: none !important;
+    background: none !important;
+}
+
+/* .info — inline-flex holding just the user; sits at the left of the row
+   so .actual-message can flow directly after it (like `.action` does in events). */
+#chat:not(.horizontal):not(.oneline) .item.announcement .info,
+#chat-toasts .item.announcement .info {
     display: inline-flex !important;
-    justify-content: flex-start !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
     padding: 0 !important;
-    flex: 0 0 auto;
-    grid-column: auto !important;
-    min-width: 0;
-    position: static !important;   /* so avatar absolutes to .message */
+    position: static !important;
+    justify-content: flex-start !important;
 }
+#chat .item.announcement .info::before,
 #chat .item.announcement .info::after,
-#chat .item.announcement .info::before { display: none !important; }
-#chat .item.announcement .info .platform { display: none !important; }
-#chat .item.announcement .info .user {
-    color: var(--fg-primary) !important;
-    text-align: left !important;
-    font-weight: 800 !important;
-    font-size: var(--chatrd-size-event) !important;
-    letter-spacing: -0.012em;
+#chat-toasts .item.announcement .info::before,
+#chat-toasts .item.announcement .info::after { display: none !important; content: none !important; }
+/* The shared chat template leaves empty timestamp/badges/pronouns spans in
+   .info. In `#chat` they're hidden by a generic `:empty` rule; in the toast
+   rail that rule doesn't apply, so each sits as a zero-width flex item and
+   eats the 6px `gap`, pushing the user text further from the chip.
+   Announcements never render these fields, so kill them unconditionally. */
+#chat .item.announcement .info .platform,
+#chat .item.announcement .info .timestamp,
+#chat .item.announcement .info .badges,
+#chat .item.announcement .info .pronouns,
+#chat-toasts .item.announcement .info .platform,
+#chat-toasts .item.announcement .info .timestamp,
+#chat-toasts .item.announcement .info .badges,
+#chat-toasts .item.announcement .info .pronouns { display: none !important; }
+
+/* Icon chip — matches `.event .info .avatar` (color-mix bg + inset border).
+   Announcement rows carry both `.item.chat` + `.announcement`, and the chatrd
+   skin hides `.item.chat .info .avatar` via a `#chat:not(.horizontal):not(.oneline)`
+   qualified rule. We match that specificity by qualifying the same way. */
+#chat:not(.horizontal):not(.oneline) .item.chat.announcement .info .avatar,
+#chat:not(.horizontal):not(.oneline) .item.chat.announcement .info .avatar:empty,
+#chat-toasts .item.announcement .info .avatar,
+#chat-toasts .item.announcement .info .avatar:empty {
+    position: absolute !important;
+    left: 11px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    border-radius: var(--chatrd-radius-sm) !important;
+    background: color-mix(in srgb, var(--evt-accent) 22%, transparent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
+    border: none !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    z-index: 2;
+    animation: none !important;
+}
+#chat .item.announcement .info .avatar:empty::before,
+#chat-toasts .item.announcement .info .avatar:empty::before {
+    content: '\f0a1';               /* bullhorn */
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--evt-accent);
+    text-shadow: none !important;
+    filter: none !important;
+    -webkit-font-smoothing: antialiased;
+    position: static;
+}
+/* Kill the inherited conic spinner layer from earlier iteration */
+#chat .item.announcement .info .avatar:empty::after,
+#chat-toasts .item.announcement .info .avatar:empty::after {
+    content: none !important;
+    display: none !important;
+    animation: none !important;
+    background: none !important;
+}
+
+/* Typography — event language (user accent-colored, text muted). */
+#chat .item.announcement .info .user,
+#chat-toasts .item.announcement .info .user {
+    font-weight: 700 !important;
+    color: var(--evt-accent) !important;
+    font-size: var(--chatrd-size-chat) !important;
+    letter-spacing: -0.006em;
+    flex-shrink: 0;
+    padding: 0 !important;
     max-width: none !important;
     overflow: visible !important;
     white-space: nowrap;
     display: inline-block !important;
+    text-align: left !important;
 }
-#chat .item.announcement .actual-message {
+#chat .item.announcement .actual-message,
+#chat-toasts .item.announcement .actual-message {
     grid-column: auto !important;
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    margin: 0 !important;
     padding: 0 !important;
-    font-size: var(--chatrd-size-event) !important;
-    line-height: 1.4 !important;
-    font-weight: 400 !important;
-}
-/* Icon chip — same treatment as events */
-#chat:not(.horizontal):not(.oneline) .item.announcement .info .avatar,
-#chat:not(.horizontal):not(.oneline) .item.announcement .info .avatar:empty {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 22px !important;
-    height: 22px !important;
-    min-width: 22px !important;
-    border-radius: 6px !important;
-    overflow: hidden !important;
-    flex-shrink: 0;
-    border: none !important;
-    position: absolute !important;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(140deg, var(--evt-accent), var(--evt-accent-2)) !important;
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.3),
-        inset 0 -6px 12px rgba(0,0,0,0.25);
-    z-index: 3;
-    animation: chatrd-icon-in 520ms var(--ease-spring) both;
-}
-#chat .item.announcement .info .avatar:empty { overflow: hidden !important; position: absolute !important; }
-#chat .item.announcement .info .avatar:empty::after {
-    content: '';
-    position: absolute;
-    inset: -40%;
-    background: conic-gradient(from 0deg,
-        transparent 0%,
-        rgba(255,255,255,0.45) 20%,
-        transparent 45%,
-        rgba(255,255,255,0.25) 70%,
-        transparent 95%);
-    animation: chatrd-icon-spin 3.2s linear infinite;
-    z-index: 0;
-    pointer-events: none;
-}
-#chat .item.announcement .info .avatar:empty::before {
-    content: '\f0a1';
-    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free";
-    font-weight: 900;
-    font-size: 11px;
-    color: rgba(255,255,255,0.98);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
-    filter: none !important;
-    position: relative;
-    z-index: 1;
+    color: var(--fg-muted) !important;
+    font-weight: 500 !important;
+    font-size: var(--chatrd-size-chat) !important;
+    line-height: var(--chatrd-line) !important;
+    min-width: 0;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Accent duo variants */
-#chat .item.announcement.green  { --evt-accent: #22c55e; --evt-accent-2: #86efac; }
-#chat .item.announcement.orange { --evt-accent: #f97316; --evt-accent-2: #fbbf24; }
-#chat .item.announcement.purple { --evt-accent: #a855f7; --evt-accent-2: #ec4899; }
+#chat .item.announcement.green,
+#chat-toasts .item.announcement.green  { --evt-accent: #22c55e; --evt-accent-2: #86efac; }
+#chat .item.announcement.orange,
+#chat-toasts .item.announcement.orange { --evt-accent: #f97316; --evt-accent-2: #fbbf24; }
+#chat .item.announcement.purple,
+#chat-toasts .item.announcement.purple { --evt-accent: #a855f7; --evt-accent-2: #ec4899; }
 
 
 /* =========================================================
@@ -791,7 +860,29 @@ body {
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
     text-shadow: var(--glow-text) !important;
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    paint-order: stroke fill;
     --evt-accent: var(--p-twitch);
+}
+/* Neutralize per-platform module.css `.info { margin: -5px 0; }` hacks that
+   were written for the old skin where events had extra padding to "eat"
+   the pullup. The chatrd skin positions `.info` inside a 24px min-height
+   `.message` with 3px padding — any negative vertical margin pulls the
+   info row above the message box, which offsets the text relative to the
+   absolutely-positioned icon chip (chip stays at msg.center, text drifts
+   up). Reset it for every event variant so the whole event family stays
+   aligned the same way. */
+#chat .event .info,
+#chat-toasts .event .info {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+/* Inline events (not toasts) — let the browser skip paint/layout when
+   they're scrolled out of the chat viewport. Toasts sit in a fixed strip
+   at the top and are always visible, so we don't apply it there. */
+#chat .event {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 28px;
 }
 
 /* .message — positioning host. Padding reserves rail + chip. */
@@ -1035,8 +1126,14 @@ body {
 #chat-toasts .event.bits        { --evt-accent: #fbbf24; }
 #chat .event.raid,
 #chat-toasts .event.raid        { --evt-accent: var(--p-twitch); }
-#chat .event.follow,
-#chat-toasts .event.follow      { --evt-accent: var(--fg-muted); }
+#chat .event.follow.twitch,
+#chat-toasts .event.follow.twitch   { --evt-accent: var(--p-twitch); }
+#chat .event.follow.youtube,
+#chat-toasts .event.follow.youtube  { --evt-accent: var(--p-youtube); }
+#chat .event.follow.tiktok,
+#chat-toasts .event.follow.tiktok   { --evt-accent: var(--p-tiktok); }
+#chat .event.follow.kick,
+#chat-toasts .event.follow.kick     { --evt-accent: var(--p-kick); }
 #chat .event.reward,
 #chat-toasts .event.reward      { --evt-accent: var(--p-twitch); }
 #chat .event.watch-streak,
@@ -1057,12 +1154,22 @@ body {
 #chat-toasts .event.tiktok.gift  { --evt-accent: var(--p-tiktok); }
 
 /* Platform override falls back to platform color if no kind accent matched. */
-#chat .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.follow):not(.watch-streak):not(.reward),
-#chat-toasts .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.follow):not(.watch-streak):not(.reward) { --evt-accent: var(--p-twitch); }
-#chat .event.youtube:not(.sub):not(.follow),
-#chat-toasts .event.youtube:not(.sub):not(.follow) { --evt-accent: var(--p-youtube); }
-#chat .event.kick:not(.sub):not(.follow),
-#chat-toasts .event.kick:not(.sub):not(.follow) { --evt-accent: var(--p-kick); }
+#chat .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.watch-streak):not(.reward),
+#chat-toasts .event.twitch:not(.sub):not(.resub):not(.gift):not(.bits):not(.raid):not(.watch-streak):not(.reward) { --evt-accent: var(--p-twitch); }
+#chat .event.youtube:not(.sub),
+#chat-toasts .event.youtube:not(.sub) { --evt-accent: var(--p-youtube); }
+#chat .event.kick:not(.sub),
+#chat-toasts .event.kick:not(.sub) { --evt-accent: var(--p-kick); }
+
+/* Announcement color variants override platform accent for .event.announcement */
+#chat .event.announcement.green,
+#chat-toasts .event.announcement.green  { --evt-accent: #22c55e; }
+#chat .event.announcement.orange,
+#chat-toasts .event.announcement.orange { --evt-accent: #f97316; }
+#chat .event.announcement.purple,
+#chat-toasts .event.announcement.purple { --evt-accent: #a855f7; }
+#chat .event.announcement.blue,
+#chat-toasts .event.announcement.blue   { --evt-accent: #3b82f6; }
 
 
 /* ---------- Bits big — pulse on chip only, not whole row ---------- */
@@ -1164,7 +1271,8 @@ body {
 }
 
 #chat-toasts .event {
-    pointer-events: auto;
+    /* OBS overlay — toasts auto-dismiss on a timer, no click-to-close,
+       so we keep hit-testing disabled (inherited from #chat-toasts). */
     animation: none;
 }
 
@@ -1178,6 +1286,12 @@ body {
         inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 25%, rgba(255,255,255,0.08)) !important;
     -webkit-backdrop-filter: blur(10px) saturate(130%);
             backdrop-filter: blur(10px) saturate(130%);
+    /* Flex column centers .info (+ optional .actual-message) vertically so
+       the text baseline sits on the chip/box center instead of hugging the
+       top padding when the content is shorter than min-height. */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
 }
 
 /* Toast chip bigger + brighter */
@@ -1211,6 +1325,51 @@ body {
 
 /* Toast tiktok gift image a bit bigger */
 #chat-toasts .event.tiktok.gift .value span.gift-image img { height: 24px !important; }
+
+/* Announcement toast variant — matches the elevated event-toast shell
+   (bigger chip, brighter rail, surface-2 card). */
+#chat-toasts .item.announcement {
+    /* Matches `.event` toasts — no cursor interaction. */
+    margin: 0 !important;
+    animation: none;
+}
+#chat-toasts .item.announcement .message {
+    min-height: 40px !important;
+    padding: 8px 12px 8px 48px !important;
+    background: var(--surface-2) !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.45),
+        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 25%, rgba(255,255,255,0.08)) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+            backdrop-filter: blur(10px) saturate(130%);
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+#chat-toasts .item.announcement .info .avatar,
+#chat-toasts .item.announcement .info .avatar:empty {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    left: 12px !important;
+    border-radius: var(--chatrd-radius-md) !important;
+    background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0,0,0,0.4)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent), 0 2px 6px rgba(0,0,0,0.25) !important;
+}
+#chat-toasts .item.announcement .info .avatar:empty::before {
+    font-size: 14px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.45) !important;
+}
+#chat-toasts .item.announcement .info .user {
+    font-weight: 800 !important;
+}
+/* Toast rail — brighter + glowing, same upgrade as `.event` toasts. */
+#chat-toasts .item.announcement .message::before {
+    opacity: 1;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--evt-accent) 60%, transparent);
+}
 
 
 /* ---------- Chat-row entrance (kept) ---------- */

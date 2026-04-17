@@ -247,6 +247,11 @@ function addMessageItem(platform, clone, classes, userid, messageid) {
             }, 1000);
         }, Math.floor(hideAfter * 1000));
     }
+
+    // Announcements surface as toasts too, matching other event notifications.
+    if (root.classList.contains('announcement')) {
+        showEventToast(item);
+    }
 }
 
 
@@ -360,11 +365,12 @@ function showEventToast(inlineItem) {
     toast.classList.add('toast-variant');
     toast.querySelectorAll('.chatmoderation').forEach(el => el.remove());
     toast.style.opacity = '0';
-    toast.style.pointerEvents = 'auto';
+    /* No cursor interaction in OBS overlay — don't re-enable hit-testing
+       that the `#chat-toasts` container disabled. */
 
     chatToastsContainer.appendChild(toast);
 
-    const visible = chatToastsContainer.querySelectorAll(':scope > .event:not([data-exiting])');
+    const visible = chatToastsContainer.querySelectorAll(':scope > .event:not([data-exiting]), :scope > .item.announcement:not([data-exiting])');
     if (visible.length > TOAST_STACK_MAX) {
         const overflow = visible.length - TOAST_STACK_MAX;
         for (let i = 0; i < overflow; i++) {
@@ -698,13 +704,19 @@ function highlightItem(items) {
 
 
 
+/* Keyboard/cursor input wiring — the chat-input field and autocomplete are
+   only reachable when `chatField` is enabled. In OBS-overlay mode (the default)
+   we skip all of this entirely so the browser never attaches input/keydown
+   listeners and never builds the command-suggestion DOM. */
+if (chatField) {
+
 chatInput.addEventListener('input', function () {
     const value = this.value.trim();
     chatcommandslist.innerHTML = '';
     chatcurrentFocus = -1;
     if (!value.startsWith('/')) return;
         Object.entries(chatcommands).forEach(([groupName, commands]) => {
-        
+
         const filtered = commands.filter(cmd => cmd.name.startsWith(value));
 
         if (filtered.length === 0) return;
@@ -727,9 +739,9 @@ chatInput.addEventListener('input', function () {
 
 chatInput.addEventListener('keydown', function (e) {
     const items = chatcommandslist.querySelectorAll('.autocomplete-item');
-    
+
     if (items.length === 0) return;
-    
+
     if (e.key === 'ArrowDown') {
         chatcurrentFocus++;
         highlightItem(items);
@@ -738,7 +750,7 @@ chatInput.addEventListener('keydown', function (e) {
         chatcurrentFocus--;
         highlightItem(items);
     }
-    
+
     else if (e.key === 'Enter') {
         e.preventDefault();
         if (chatcurrentFocus > -1 && items[chatcurrentFocus]) {
@@ -746,6 +758,8 @@ chatInput.addEventListener('keydown', function (e) {
         }
     }
 });
+
+} /* /if (chatField) */
 
 
 
@@ -799,6 +813,12 @@ async function pushChatInputSettings() {
 
 
 
+/* The submit path is shared by the chat-input UI and by moderation buttons
+   (executeModCommand -> chatInputForm.requestSubmit()). Attach only when
+   either surface is active; in pure OBS-overlay mode this listener is
+   skipped entirely. */
+if (chatField || chatModeration) {
+
 chatInputForm.addEventListener("submit", function(event) {
     event.preventDefault();
 
@@ -850,6 +870,14 @@ chatInputForm.addEventListener("submit", function(event) {
     chatInput.value = '';
 });
 
+} /* /if (chatField || chatModeration) — end of submit handler */
+
+/* Cursor-driven UI (send button, settings toggle, document-wide click to
+   dismiss autocomplete) only exists when the typing UI is on. In OBS-overlay
+   mode we don't attach these at all — the browser has zero `click`
+   listeners on `document`, so click hit-testing costs nothing. */
+if (chatField) {
+
 chatInputSend.addEventListener("click", function () {
     chatInputForm.requestSubmit();
 });
@@ -864,6 +892,8 @@ document.addEventListener('click', function (e) {
         chatcommandslist.innerHTML = '';
     }
 });
+
+} /* /if (chatField) — end of cursor-driven UI wiring */
 
 
 

@@ -271,7 +271,22 @@ let n = 0;
 // ---------- Animation helper ----------
 // Uses window.chatrdAnimate (Framer Motion) when available.
 // If not loaded yet, falls back to CSS @keyframes in the skin.
+// Burst-rate detector — if inserts arrive faster than ~60/sec (one per
+// frame), we're in a flood scenario where per-row entrance animations just
+// queue up in Framer Motion, burn CPU, and never finish before the row
+// gets trimmed anyway. Skip them in burst mode.
+let _lastAnimT = 0;
+let _animBurst = 0;
+function _inBurst() {
+    const t = performance.now();
+    if (t - _lastAnimT < 16) _animBurst++;
+    else _animBurst = 0;
+    _lastAnimT = t;
+    return _animBurst > 8;
+}
+
 function anim(el) {
+    if (_inBurst()) return;
     if (typeof window.chatrdAnimate === 'function') {
         window.chatrdAnimate(el,
             { opacity: [0, 1], y: [6, 0] },
@@ -280,7 +295,7 @@ function anim(el) {
 }
 
 function animEvent(el) {
-    if (typeof window.chatrdAnimate === 'function') {
+    if (!_inBurst() && typeof window.chatrdAnimate === 'function') {
         window.chatrdAnimate(el,
             { opacity: [0, 1], x: [-12, 0], scale: [0.98, 1] },
             { type: 'spring', stiffness: 280, damping: 22 });
@@ -295,7 +310,6 @@ function showToast(inlineEl) {
     toast.classList.add('toast-variant');
     toast.querySelectorAll('.chatmoderation').forEach(el => el.remove());
     toast.style.opacity = '0';
-    toast.style.pointerEvents = 'auto';
     chatToasts.appendChild(toast);
 
     const visible = chatToasts.querySelectorAll(':scope > .event:not([data-exiting]), :scope > .item:not([data-exiting])');
@@ -368,8 +382,30 @@ function buildEventRow(opts) {
         </div>`;
 }
 
+// Cap chat DOM to a fixed row count — mirrors `removeExtraChatMessages` in
+// chatrd.js. The real overlay trims at `chatThreshold=50`; the preview used
+// to just keep piling on, which is why Flood × 200 spammed felt laggy. We
+// trim every insert, which is O(1) amortized because we only ever remove a
+// bounded number per call. Rows are prepended so the *bottom* (tail) is
+// oldest — same as the real overlay.
+const PREVIEW_CHAT_MAX = 80;
+function trimChat() {
+    const n = chat.children.length;
+    if (n <= PREVIEW_CHAT_MAX) return;
+    // Remove oldest (tail) rows one at a time. Limit the batch so a single
+    // stale-state call doesn't freeze the main thread.
+    const maxPerCall = 50;
+    let remove = Math.min(n - PREVIEW_CHAT_MAX, maxPerCall);
+    while (remove-- > 0) {
+        const last = chat.lastElementChild;
+        if (!last) break;
+        chat.removeChild(last);
+    }
+}
+
 function insert(html) {
     chat.insertAdjacentHTML('afterbegin', html);
+    trimChat();
     return chat.firstElementChild;
 }
 
@@ -540,7 +576,7 @@ function addEvent(kind) {
     }
 
     const el = insert(html);
-    if (kind === 'announce') anim(el); else animEvent(el);
+    animEvent(el);
 }
 
 function addTikTokGift() {
