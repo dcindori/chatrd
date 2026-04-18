@@ -643,10 +643,11 @@ body {
    without cancelling each other. */
 #chat .item.reply .reply {
     grid-column: 1 / -1;
+    justify-self: start;         /* hug content instead of stretching the grid cell */
     display: inline-flex !important;
     align-items: center;
     gap: 6px;
-    max-width: calc(100% - 8px);
+    max-width: calc(100% - var(--chatrd-user-col) - var(--chatrd-tile) - var(--chatrd-gap) * 2 - 8px);
     margin-left: calc(var(--chatrd-user-col) + var(--chatrd-tile) + var(--chatrd-gap) * 2);
     margin-bottom: 2px;
     padding: 3px 10px 3px 8px !important;
@@ -685,6 +686,14 @@ body {
     text-overflow: ellipsis;
     min-width: 0;
     flex: 1;
+}
+/* Shrink emotes in the reply preview to match the text line-height —
+   otherwise a full-size emote (~24-30px) inflates the card height and
+   breaks vertical alignment with the reply-to username + icon. */
+#chat .item.reply .reply .reply-body img {
+    max-height: 14px !important;
+    width: auto !important;
+    vertical-align: middle;
 }
 /* Per-platform accent color (used via --reply-accent fallback chain) */
 #chat .item.reply.twitch .reply { --reply-accent: #a78bfa; }  /* Twitch purple */
