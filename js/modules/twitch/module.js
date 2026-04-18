@@ -273,7 +273,7 @@ async function twitchChatMessage(data) {
             streamData.emotes = replyEmotes;
         }
 
-        reply.insertAdjacentHTML('beforeend', ` <strong>Replying to ${escapeHTML(data.message.reply.userName)}:</strong> ${data.message.reply.msgBody}`);
+        reply.insertAdjacentHTML('beforeend', `<strong>@${escapeHTML(data.message.reply.userName)}</strong><span class="reply-body">${data.message.reply.msgBody}</span>`);
     }
     else { reply.remove(); }
 

@@ -623,14 +623,56 @@ body {
    REPLY / SHARED CHAT
    ========================================================= */
 
-#chat .item.reply .reply,
 #chat .item .shared-chat {
     padding-left: calc(var(--chatrd-user-col) + var(--chatrd-tile) + var(--chatrd-gap) * 2);
 }
+
+/* Reply — quote card with accent bar.
+   Sits on its own full-width row above the message; aligned to the message
+   column via margin-left. A semi-opaque dark background guarantees the card
+   stays readable even when the parent row has a mention-fill or role tint
+   painted behind it. Icon + "@user" share the accent color; body text is
+   single-line truncated with ellipsis. Signal channel is independent of
+   @mention (fill) and first-chatter (outline), so combinations compose
+   without cancelling each other. */
 #chat .item.reply .reply {
-    font-size: 10px !important;
-    color: var(--fg-dim) !important;
+    grid-column: 1 / -1;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 8px);
+    margin-left: calc(var(--chatrd-user-col) + var(--chatrd-tile) + var(--chatrd-gap) * 2);
+    margin-bottom: 2px;
+    padding: 3px 10px 3px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    color: #cbd5e1 !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border-left: 3px solid var(--reply-accent, #a78bfa) !important;
+    border-radius: 0 6px 6px 0 !important;
+    overflow: hidden;
 }
+#chat .item.reply .reply > i {
+    font-size: 10px !important;
+    color: var(--reply-accent, #a78bfa) !important;
+    flex-shrink: 0;
+}
+#chat .item.reply .reply strong {
+    color: var(--reply-accent, #e5e7eb) !important;
+    font-weight: 600 !important;
+    margin-right: 2px;
+}
+#chat .item.reply .reply .reply-body {
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+}
+/* Per-platform accent color (used via --reply-accent fallback chain) */
+#chat .item.reply.twitch .reply { --reply-accent: #a78bfa; }  /* Twitch purple */
+#chat .item.reply.kick   .reply { --reply-accent: #53fc18; }  /* Kick green  */
 #chat .item .shared-chat span.origin {
     background: var(--surface-1) !important;
     border-radius: 4px !important;
