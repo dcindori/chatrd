@@ -291,7 +291,13 @@ body {
 #chat .item .info .user {
     order: 5;
     display: inline-block !important;   /* inline-flex breaks text-overflow */
-    overflow: hidden;
+    /* `overflow: clip` + `overflow-clip-margin` lets the role-glow text-shadow
+       (blur radius up to ~8px for mod/streamer roles) paint beyond the padding
+       box without being cropped, while still clipping hard at the edge so
+       `text-overflow: ellipsis` keeps truncating long names. `overflow: hidden`
+       would have clipped the glow flush against the padding box. */
+    overflow: clip;
+    overflow-clip-margin: 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
@@ -302,7 +308,7 @@ body {
     font-weight: 700 !important;
     letter-spacing: -0.012em;
     line-height: 1.5;
-    padding: 2px 0;           /* breathing room for glow */
+    padding: 2px 0;
 }
 
 #chat .user { color: var(--fg-primary); }
@@ -650,7 +656,17 @@ body {
     background: rgba(0, 0, 0, 0.35) !important;
     border-left: 3px solid var(--reply-accent, #a78bfa) !important;
     border-radius: 0 6px 6px 0 !important;
-    overflow: hidden;
+}
+/* Reply card is a subordinate element — its own dark background already
+   provides contrast, so the inherited item-level glow + stroke just cause
+   clipped-shadow artifacts (the glow gets cut at the card/ellipsis edges).
+   Suppress both inside the card for clean text. */
+#chat .item.reply .reply,
+#chat .item.reply .reply strong,
+#chat .item.reply .reply .reply-body,
+#chat .item.reply .reply > i {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
 }
 #chat .item.reply .reply > i {
     font-size: 10px !important;
