@@ -513,14 +513,7 @@ async function twitchRewardRedemption(data) {
     
     user.textContent = data.user_name;
     action.innerHTML = ` redeemed `;
-    value.innerHTML = `<strong>${data.reward.title}</strong> (${data.reward.cost})`;
-
-    value.innerHTML = `
-        <div class="gift-info">
-            <span class="gift-image"><strong>${data.reward.title}</strong></span>
-            <span class="gift-value"><img src="js/modules/twitch/images/icon-channel-points.svg" alt="Channel Points"> ${data.reward.cost}</span>
-        </div>
-    `;
+    value.innerHTML = `<strong>${data.reward.title}</strong>`;
     
     var userInput = data.user_input ? `${data.user_input}` : '';
     message.textContent = userInput;
@@ -579,12 +572,7 @@ async function twitchAutomaticRewardRedemption(data) {
     user.textContent = data.user_name;
     action.innerHTML = ` redeemed `;
 
-    value.innerHTML = `
-        <div class="gift-info">
-            <span class="gift-image"><strong>${title}</strong></span>
-            <span class="gift-value"><img src="js/modules/twitch/images/icon-channel-points.svg" alt="Channel Points"> ${data.cost}</span>
-        </div>
-    `;
+    value.innerHTML = `<strong>${title}</strong>`;
     
     /*var userInput = data.user_input ? `${data.user_input}` : '';
     message.textContent = `${userInput}`;*/
