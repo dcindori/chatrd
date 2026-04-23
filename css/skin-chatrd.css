@@ -313,7 +313,7 @@ body {
        `text-overflow: ellipsis` keeps truncating long names. `overflow: hidden`
        would have clipped the glow flush against the padding box. */
     overflow: clip;
-    overflow-clip-margin: 8px;
+    overflow-clip-margin: 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
@@ -324,7 +324,7 @@ body {
     font-weight: 700 !important;
     letter-spacing: -0.012em;
     line-height: 1.5;
-    padding: 2px 0;
+    padding: 2px;
 }
 
 #chat .user { color: var(--fg-primary); }
@@ -1167,7 +1167,7 @@ body {
     font-size: var(--chatrd-size-chat) !important;
     letter-spacing: -0.006em;
     flex-shrink: 0;
-    padding: 0 !important;
+    padding: 1px 2px !important;
     max-width: none !important;
     overflow: visible !important;
     white-space: nowrap;
@@ -1183,7 +1183,8 @@ body {
     flex-grow: 0;
     min-width: 0;
     white-space: normal;
-    overflow: hidden;
+    overflow: clip;
+    overflow-clip-margin: 6px;
     text-overflow: ellipsis;
 }
 
