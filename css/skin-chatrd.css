@@ -1378,6 +1378,7 @@ body {
 #chat-toasts .event.tiktok.gift .value span.gift-value img {
     width: 11px !important; height: 11px !important;
     filter: none !important; margin: 0 !important; animation: none !important;
+    transform: none !important;
 }
 #chat .event.tiktok.gift .action strong,
 #chat-toasts .event.tiktok.gift .action strong {
