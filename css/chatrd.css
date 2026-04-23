@@ -885,3 +885,142 @@ body {
     border-radius: 5px;
     font-size: 14px;
  }
+
+
+/* =========================================================
+   CHAT DENSITY PULSE — thin 2px bar above #live-bar whose
+   fill width tracks messages-per-minute over a sliding 15s
+   window. Silent when chat is quiet (opacity → 0 under
+   ~10 mpm), reads up to ~60 mpm as a full-width fill.
+   Useful for the streamer to notice raids / spikes without
+   glancing at every message.
+   ========================================================= */
+#chat-density {
+    flex: 0 0 auto;
+    height: 2px;
+    margin: 0 10px 3px;
+    background: rgba(255,255,255,0.05);
+    overflow: hidden;
+    border-radius: 1px;
+    pointer-events: none;
+}
+#chat-density[hidden] { display: none !important; }
+#chat-density .density-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.35) 0%, rgba(255,120,40,0.85) 100%);
+    transform-origin: left center;
+    transform: scaleX(0);
+    opacity: 0;
+    transition: transform 500ms ease-out, opacity 400ms ease-out;
+    will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+    #chat-density .density-fill { transition: none; }
+}
+
+
+/* =========================================================
+   LIVE VIEWER BAR — baseline cross-skin styling.
+   Sits at the bottom of .wrapper, outside #chat, so it's
+   never clipped by a skin's top fade mask and never covered
+   by #chat-toasts (which stacks from the top). Skins can
+   override any of these for visual polish.
+   ========================================================= */
+#live-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 6px;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    pointer-events: none;
+    font-size: 11px;
+}
+#live-bar[hidden] { display: none !important; }
+
+#live-bar .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ff2b2b;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    box-shadow: 0 0 14px rgba(255,43,43,0.55);
+    text-shadow: none;
+}
+#live-bar .live-chip::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px #fff;
+    animation: chatrd-livepulse 1.6s ease-in-out infinite;
+}
+@keyframes chatrd-livepulse {
+    0%, 100% { opacity: 0.6; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.1);  }
+}
+
+#live-bar .viewers {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+}
+#live-bar .viewers .live-total {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+#live-bar .viewers .live-delta {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #4ade80;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+#live-bar .viewers .live-delta.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+#live-bar .viewers .live-delta.down { color: #f87171; }
+
+#live-bar .platform-mini {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
+}
+#live-bar .platform-mini .pm {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0.92;
+    font-variant-numeric: tabular-nums;
+}
+#live-bar .platform-mini .pm[hidden] { display: none !important; }
+#live-bar .platform-mini .pm i {
+    font-size: 9px;
+    font-style: normal;
+    line-height: 1;
+}
+#live-bar .platform-mini .pm.twitch  { background: rgba(145,70,255,0.25); color: #d4b6ff; }
+#live-bar .platform-mini .pm.youtube { background: rgba(255,0,51,0.22);   color: #ffb0be; }
+#live-bar .platform-mini .pm.kick    { background: rgba(83,252,24,0.18);  color: #b1f48d; }
+#live-bar .platform-mini .pm.tiktok  { background: rgba(255,0,80,0.22);   color: #ffa8c0; }
+
+@media (prefers-reduced-motion: reduce) {
+    #live-bar .live-chip::before { animation: none; }
+    #live-bar .viewers .live-delta { transition: none; }
+}

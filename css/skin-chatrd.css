@@ -120,6 +120,22 @@ body {
        for every message, emote, link, and pseudo inside it. Moderation
        buttons opt back in with `pointer-events: auto`. */
     pointer-events: none;
+    /* Enable container queries so the user lane can shrink on narrow OBS
+       sources without depending on the viewport. The common deployment is
+       ~470px wide — default 132px lane is comfortable there — but if a
+       source ever drops below ~400px we reclaim space from the user lane
+       instead of cropping long handles. */
+    container-type: inline-size;
+    container-name: chatbox;
+}
+/* Narrow-source fallback: shorter user lane below ~400px. `.item` is inside
+   the `chatbox` container, so redefining the custom property there cascades
+   into `.message` where it's consumed as grid-template-columns. */
+@container chatbox (max-width: 400px) {
+    #chat .item { --chatrd-user-col: 108px; }
+}
+@container chatbox (max-width: 340px) {
+    #chat .item { --chatrd-user-col: 92px; }
 }
 /* Hit-testing escape hatches — only the elements that actually need cursor
    input when their opt-in flag is on. Everything else stays non-interactive. */
@@ -335,35 +351,33 @@ body {
 #chat .item.chat.role-admin       .user { color: var(--role-admin)       !important; font-weight: 800 !important; }
 #chat .item.chat.role-staff       .user { color: var(--role-staff)       !important; font-weight: 800 !important; }
 
-/* POP ROLES — broadcaster + mod + lead mod stand out above everyone else */
+/* POP ROLES — broadcaster + mod + lead mod stand out above everyone else.
+   Legibility is carried by the base `-webkit-text-stroke` + `paint-order` on
+   `#chat .item`, which already paints a 0.5px dark stroke under every glyph.
+   That means the per-role glow only needs to carry the *color signal*, not
+   re-establish contrast against the background — so we can collapse the old
+   3-layer shadow (colored blur + dark 2px inner + 1px drop) into a single
+   colored blur. 3× fewer text-shadow passes per glyph; visually the halo is
+   slightly softer but the role still reads instantly during raids. */
 #chat .item.chat.role-mod .user {
     color: var(--role-mod) !important;
     font-weight: 800 !important;
     letter-spacing: -0.01em;
-    text-shadow:
-        0 0 5px rgba(0,173,3,0.65),
-        0 0 2px rgba(0,0,0,0.85),
-        0 1px 1px rgba(0,0,0,0.6);
+    text-shadow: 0 0 6px rgba(0,173,3,0.75);
 }
 #chat .item.chat.role-lead-mod .user {
     color: var(--role-mod) !important;
     font-weight: 900 !important;
     letter-spacing: -0.01em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow:
-        0 0 8px rgba(0,173,3,0.85),
-        0 0 3px rgba(0,0,0,0.9),
-        0 1px 1px rgba(0,0,0,0.7);
+    text-shadow: 0 0 8px rgba(0,173,3,0.9);
 }
 #chat .item.chat.streamer .user {
     color: var(--role-streamer) !important;
     font-weight: 900 !important;
     letter-spacing: -0.02em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow:
-        0 0 8px rgba(233,25,22,0.85),
-        0 0 3px rgba(0,0,0,0.9),
-        0 1px 1px rgba(0,0,0,0.7);
+    text-shadow: 0 0 8px rgba(233,25,22,0.9);
 }
 
 
@@ -648,6 +662,8 @@ body {
     align-items: center;
     gap: 6px;
     max-width: calc(100% - var(--chatrd-user-col) - var(--chatrd-tile) - var(--chatrd-gap) * 2 - 8px);
+    min-width: 0;                /* allow shrinking past content width on narrow OBS sources */
+    box-sizing: border-box;
     margin-left: calc(var(--chatrd-user-col) + var(--chatrd-tile) + var(--chatrd-gap) * 2);
     margin-bottom: 2px;
     padding: 3px 10px 3px 8px !important;
@@ -685,7 +701,8 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    flex: 1;
+    flex: 1 1 0;                 /* shrink past content width — keeps long URLs/emote chains clipped */
+    max-width: 100%;             /* never exceed the reply card's flex space */
 }
 /* Shrink emotes in the reply preview to match the text line-height —
    otherwise a full-size emote (~24-30px) inflates the card height and
@@ -735,7 +752,8 @@ body {
    channel clean means a mention + first-chatter combo shows both at once:
    amber dashed outline over the platform fill, neither signal lost. */
 #chat:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .actual-message {
-    max-width: min(100%, 60ch);
+    max-width: 100%;             /* let the grid cell bound us — 60ch blew past the gutter on narrow sources */
+    min-width: 0;                /* allow shrinking inside the grid/flex context */
     padding: 2px 10px !important;
     background: rgba(var(--mention-color), 0.22) !important;
     border-radius: var(--chatrd-radius-md) !important;
@@ -1525,3 +1543,114 @@ body {
     border-radius: 3px;
 }
 #chat .item .chatmoderation button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+
+/* =========================================================
+   LIVE VIEWER BAR
+   Sits at the bottom of .wrapper, OUTSIDE #chat — so it's
+   unaffected by the top fade mask and never overlapped by
+   chat-toasts (which stack from the top). Aggregates counts
+   from the existing #statistics DOM; no new websocket data.
+   ========================================================= */
+#live-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 6px;
+    font-family: var(--chatrd-font) !important;
+    pointer-events: none;
+    color: var(--fg-primary, #fff);
+    text-shadow: var(--glow-text, -1px -1px 0 rgba(0,0,0,.92), 1px -1px 0 rgba(0,0,0,.92), -1px 1px 0 rgba(0,0,0,.92), 1px 1px 0 rgba(0,0,0,.92), 0 2px 4px rgba(0,0,0,.85));
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    paint-order: stroke fill;
+}
+#live-bar[hidden] { display: none !important; }
+
+#live-bar .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ff2b2b;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: var(--chatrd-radius-sm);
+    font-size: 10px;
+    box-shadow: 0 0 14px rgba(255,43,43,0.55);
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+}
+#live-bar .live-chip::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px #fff;
+    animation: chatrd-livepulse 1.6s ease-in-out infinite;
+}
+@keyframes chatrd-livepulse {
+    0%, 100% { opacity: 0.6; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.1);  }
+}
+
+#live-bar .viewers {
+    font-size: 11px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+}
+#live-bar .viewers .live-total {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+#live-bar .viewers .live-delta {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--good, #4ade80);
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+#live-bar .viewers .live-delta.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+#live-bar .viewers .live-delta.down { color: #f87171; }
+
+#live-bar .platform-mini {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
+}
+#live-bar .platform-mini .pm {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--chatrd-radius-sm);
+    opacity: 0.92;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    -webkit-text-stroke: 0;
+    font-variant-numeric: tabular-nums;
+}
+#live-bar .platform-mini .pm[hidden] { display: none !important; }
+#live-bar .platform-mini .pm i {
+    font-size: 9px;
+    font-style: normal;
+    line-height: 1;
+}
+#live-bar .platform-mini .pm.twitch  { background: rgba(145,70,255,0.25); color: #d4b6ff; }
+#live-bar .platform-mini .pm.youtube { background: rgba(255,0,51,0.22);   color: #ffb0be; }
+#live-bar .platform-mini .pm.kick    { background: rgba(83,252,24,0.18);  color: #b1f48d; }
+#live-bar .platform-mini .pm.tiktok  { background: rgba(255,0,80,0.22);   color: #ffa8c0; }
+
+@media (prefers-reduced-motion: reduce) {
+    #live-bar .live-chip::before { animation: none; }
+    #live-bar .viewers .live-delta { transition: none; }
+}

@@ -1120,3 +1120,181 @@ async function multiStreamChat(element) {
         traverse(element);
     }
 }
+
+
+/* =========================================================
+   LIVE VIEWER BAR
+   Aggregates viewer counts from the hidden #statistics DOM
+   (populated by each platform module) into a single chip at
+   the bottom of .wrapper. No new websocket events; observes
+   the spans that already get updated per-platform.
+   ========================================================= */
+(function initLiveBar() {
+    const bar = document.getElementById('live-bar');
+    const stats = document.getElementById('statistics');
+    if (!bar || !stats) return;
+    if (showPlatformStatistics == false) return;
+
+    const totalEl = bar.querySelector('.live-total');
+    const deltaEl = bar.querySelector('.live-delta');
+    const chips = {
+        twitch:  bar.querySelector('.pm[data-platform="twitch"]'),
+        youtube: bar.querySelector('.pm[data-platform="youtube"]'),
+        kick:    bar.querySelector('.pm[data-platform="kick"]'),
+        tiktok:  bar.querySelector('.pm[data-platform="tiktok"]'),
+    };
+
+    function parseCount(txt) {
+        if (!txt) return 0;
+        txt = String(txt).replace(/,/g, '').trim();
+        const m = txt.match(/^([\d.]+)\s*([kKmM]?)$/);
+        if (!m) return 0;
+        const n = parseFloat(m[1]);
+        if (!isFinite(n)) return 0;
+        const s = m[2].toLowerCase();
+        return Math.round(s === 'm' ? n * 1e6 : s === 'k' ? n * 1000 : n);
+    }
+
+    function format(n) {
+        if (n >= 1000000) {
+            const s = (n / 1000000).toFixed(1);
+            return (s.endsWith('.0') ? s.slice(0, -2) : s) + 'M';
+        }
+        if (n >= 1000) {
+            const s = (n / 1000).toFixed(1);
+            return (s.endsWith('.0') ? s.slice(0, -2) : s) + 'K';
+        }
+        return n.toLocaleString();
+    }
+
+    /* Each module puts its .viewers span inside #statistics #<platform>.
+       YouTube can create multiple `#youtubeStream-<id>` containers in
+       multi-streamer mode, so we sum across all of them. */
+    function readPlatform(platform) {
+        if (platform === 'youtube') {
+            const nodes = stats.querySelectorAll('[id^="youtubeStream-"] .viewers span, #youtube .viewers span');
+            let total = 0;
+            nodes.forEach(n => { total += parseCount(n.textContent); });
+            return total;
+        }
+        const node = stats.querySelector(`#${platform} .viewers span`);
+        return parseCount(node && node.textContent);
+    }
+
+    /* A platform chip should only appear if its module actually created a
+       statistics container (module loaded + viewers flag on). */
+    function platformActive(platform) {
+        if (platform === 'youtube') {
+            return !!stats.querySelector('#youtube, [id^="youtubeStream-"]');
+        }
+        const el = stats.querySelector(`#${platform}`);
+        return !!el && el.style.display !== 'none';
+    }
+
+    let lastTotal = 0;
+    let deltaHideTimer = null;
+    let firstPaint = true;
+
+    function flashDelta(d) {
+        if (!d) return;
+        if (deltaHideTimer) clearTimeout(deltaHideTimer);
+        deltaEl.textContent = (d > 0 ? '+' : '') + d;
+        deltaEl.classList.toggle('down', d < 0);
+        deltaEl.classList.add('show');
+        deltaHideTimer = setTimeout(() => deltaEl.classList.remove('show'), 1800);
+    }
+
+    function recompute() {
+        let total = 0;
+        let anyActive = false;
+        for (const p of ['twitch', 'youtube', 'kick', 'tiktok']) {
+            const active = platformActive(p);
+            const chip = chips[p];
+            if (!chip) continue;
+            if (active) {
+                anyActive = true;
+                const n = readPlatform(p);
+                total += n;
+                chip.querySelector('span').textContent = format(n);
+                chip.hidden = false;
+            } else {
+                chip.hidden = true;
+            }
+        }
+        totalEl.textContent = format(total);
+        if (!firstPaint) flashDelta(total - lastTotal);
+        firstPaint = false;
+        lastTotal = total;
+        bar.hidden = !anyActive;
+    }
+
+    const observer = new MutationObserver(() => {
+        /* Debounce: several modules can update in the same tick. */
+        clearTimeout(observer._t);
+        observer._t = setTimeout(recompute, 120);
+    });
+    observer.observe(stats, { childList: true, subtree: true, characterData: true });
+
+    /* Initial paint once modules have had a chance to inject their statistics
+       containers. Subsequent updates come from the observer. */
+    setTimeout(recompute, 250);
+})();
+
+
+/* =========================================================
+   CHAT DENSITY PULSE
+   Tracks message timestamps in a 15s sliding window, maps
+   messages-per-minute onto the fill width of a 2px bar
+   above the live bar. MutationObserver hooks the existing
+   `chatContainer.prepend(clone)` path — no changes to the
+   message pipeline needed.
+   ========================================================= */
+(function initChatDensity() {
+    const bar = document.getElementById('chat-density');
+    const chat = document.getElementById('chat');
+    if (!bar || !chat) return;
+
+    const fill = bar.querySelector('.density-fill');
+    const WINDOW_MS = 15000;
+    const MAX_MPM = 60;       /* full fill at ~60 msgs/minute */
+    const MIN_VISIBLE_MPM = 8; /* fade out when chat is genuinely quiet */
+    const TICK_MS = 500;
+
+    const timestamps = [];
+
+    new MutationObserver(mutations => {
+        const now = performance.now();
+        for (const m of mutations) {
+            for (const node of m.addedNodes) {
+                if (node.nodeType !== 1) continue;
+                /* Only count actual chat items / events, not reply cards or
+                   toast mirrors that might land in #chat. */
+                if (node.classList && (node.classList.contains('item') || node.classList.contains('event'))) {
+                    timestamps.push(now);
+                }
+            }
+        }
+    }).observe(chat, { childList: true });
+
+    function tick() {
+        const now = performance.now();
+        const cutoff = now - WINDOW_MS;
+        while (timestamps.length && timestamps[0] < cutoff) timestamps.shift();
+        const mpm = (timestamps.length / WINDOW_MS) * 60000;
+        const pct = Math.min(1, mpm / MAX_MPM);
+
+        if (mpm < MIN_VISIBLE_MPM) {
+            bar.hidden = false;         /* keep in layout so live-bar doesn't jump */
+            fill.style.opacity = '0';
+            fill.style.transform = 'scaleX(0)';
+        } else {
+            bar.hidden = false;
+            fill.style.opacity = String(0.35 + pct * 0.55);
+            fill.style.transform = `scaleX(${pct.toFixed(3)})`;
+        }
+    }
+
+    setInterval(tick, TICK_MS);
+    /* First paint after a beat so layout stabilises before we start animating. */
+    setTimeout(tick, 300);
+})();

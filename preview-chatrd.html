@@ -175,6 +175,22 @@
         <button onclick="addEveryEvent()" style="margin-top:4px;">+ Every event (audit)</button>
 
         <div class="divider"></div>
+        <div class="section-title">Live Bar</div>
+        <div class="grid2">
+            <button id="btn-livebar" class="active" onclick="toggleLiveBar()">Bar: ON</button>
+            <button onclick="tickDelta(12)">+12</button>
+            <button onclick="tickDelta(-3)">-3</button>
+            <button onclick="tickDelta(150)">+150</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Density</div>
+        <div class="grid2">
+            <button id="btn-density" class="active" onclick="toggleDensity()">Pulse: ON</button>
+            <button onclick="densityBurst()">Fake burst</button>
+        </div>
+
+        <div class="divider"></div>
         <div class="section-title">Stress</div>
         <div class="grid2">
             <button onclick="flood(20)">Flood 20</button>
@@ -184,7 +200,7 @@
         </div>
     </div>
 
-    <div id="container"><div class="wrapper"><div id="chat-toasts" aria-live="polite"></div><div id="chat"></div></div></div>
+    <div id="container"><div class="wrapper"><div id="chat-toasts" aria-live="polite"></div><div id="chat"></div><div id="chat-density" aria-hidden="true" hidden><span class="density-fill"></span></div><div id="live-bar" aria-live="polite"><span class="live-chip">LIVE</span><span class="viewers"><b class="live-total">12,847</b> watching <span class="live-delta"></span></span><span class="platform-mini"><span class="pm twitch" data-platform="twitch"><i class="fa-brands fa-twitch"></i><span>9.2K</span></span><span class="pm youtube" data-platform="youtube"><i class="fa-brands fa-youtube"></i><span>2.1K</span></span><span class="pm kick" data-platform="kick"><i>K</i><span>1.1K</span></span><span class="pm tiktok" data-platform="tiktok"><i class="fa-brands fa-tiktok"></i><span>407</span></span></span></div></div></div>
 
 <script>
 const chat = document.getElementById('chat'), R = document.documentElement.style;
@@ -664,6 +680,92 @@ function seed() {
 // Run seed once Framer Motion is wired (or immediately if it fails).
 // Delay seed slightly so ESM import resolves first.
 setTimeout(seed, 120);
+
+
+// ---------- Live bar (preview) ----------
+const liveBar = document.getElementById('live-bar');
+const liveTotal = liveBar.querySelector('.live-total');
+const liveDelta = liveBar.querySelector('.live-delta');
+let liveCount = 12847;
+let deltaTimer = null;
+
+function toggleLiveBar() {
+    liveBar.hidden = !liveBar.hidden;
+    document.getElementById('btn-livebar').classList.toggle('active', !liveBar.hidden);
+    document.getElementById('btn-livebar').textContent = 'Bar: ' + (liveBar.hidden ? 'OFF' : 'ON');
+}
+function format(n) {
+    if (n >= 1e6) { const s = (n/1e6).toFixed(1); return (s.endsWith('.0') ? s.slice(0,-2) : s) + 'M'; }
+    if (n >= 1e3) { const s = (n/1e3).toFixed(1); return (s.endsWith('.0') ? s.slice(0,-2) : s) + 'K'; }
+    return n.toLocaleString();
+}
+function tickDelta(d) {
+    liveCount = Math.max(0, liveCount + d);
+    liveTotal.textContent = liveCount.toLocaleString();
+    if (deltaTimer) clearTimeout(deltaTimer);
+    liveDelta.textContent = (d > 0 ? '+' : '') + d;
+    liveDelta.classList.toggle('down', d < 0);
+    liveDelta.classList.add('show');
+    deltaTimer = setTimeout(() => liveDelta.classList.remove('show'), 1800);
+}
+
+
+// ---------- Density pulse (preview) ----------
+const densityBar = document.getElementById('chat-density');
+const densityFill = densityBar.querySelector('.density-fill');
+const WINDOW_MS = 15000;
+const MAX_MPM = 60;
+const MIN_VISIBLE_MPM = 8;
+const densityTimestamps = [];
+let densityOn = true;
+
+new MutationObserver(mutations => {
+    const now = performance.now();
+    for (const m of mutations) {
+        for (const node of m.addedNodes) {
+            if (node.nodeType !== 1) continue;
+            if (node.classList && (node.classList.contains('item') || node.classList.contains('event'))) {
+                densityTimestamps.push(now);
+            }
+        }
+    }
+}).observe(chat, { childList: true });
+
+function densityTick() {
+    if (!densityOn) {
+        densityBar.hidden = true;
+        return;
+    }
+    const now = performance.now();
+    const cutoff = now - WINDOW_MS;
+    while (densityTimestamps.length && densityTimestamps[0] < cutoff) densityTimestamps.shift();
+    const mpm = (densityTimestamps.length / WINDOW_MS) * 60000;
+    const pct = Math.min(1, mpm / MAX_MPM);
+    densityBar.hidden = false;
+    if (mpm < MIN_VISIBLE_MPM) {
+        densityFill.style.opacity = '0';
+        densityFill.style.transform = 'scaleX(0)';
+    } else {
+        densityFill.style.opacity = String(0.35 + pct * 0.55);
+        densityFill.style.transform = 'scaleX(' + pct.toFixed(3) + ')';
+    }
+}
+setInterval(densityTick, 500);
+
+function toggleDensity() {
+    densityOn = !densityOn;
+    document.getElementById('btn-density').classList.toggle('active', densityOn);
+    document.getElementById('btn-density').textContent = 'Pulse: ' + (densityOn ? 'ON' : 'OFF');
+    densityTick();
+}
+
+function densityBurst() {
+    /* Fake a raid-level burst: backfill 40 timestamps spread over the last
+       10 seconds so the bar ramps up fast, then relax naturally. */
+    const now = performance.now();
+    for (let i = 0; i < 40; i++) densityTimestamps.push(now - Math.random() * 10000);
+    densityTick();
+}
 </script>
 </body>
 </html>
