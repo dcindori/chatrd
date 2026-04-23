@@ -1545,6 +1545,12 @@ body {
 #chat .item .chatmoderation button:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
 
+/* Hide the old platform statistics banners — the live bar at the
+   bottom surfaces this data instead. The #statistics DOM still
+   exists so platform modules can write viewer counts to it. */
+#statistics { display: none !important; }
+
+
 /* =========================================================
    LIVE VIEWER BAR
    Sits at the bottom of .wrapper, OUTSIDE #chat — so it's
