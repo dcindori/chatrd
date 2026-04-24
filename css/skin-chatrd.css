@@ -444,32 +444,36 @@ body {
 #chat .item.chat.role-staff       .user { color: var(--role-staff)       !important; font-weight: 800 !important; }
 
 /* POP ROLES — broadcaster + mod + lead mod stand out above everyone else.
-   Legibility is carried by the base `-webkit-text-stroke` + `paint-order` on
-   `#chat .item`, which already paints a 0.5px dark stroke under every glyph.
-   That means the per-role glow only needs to carry the *color signal*, not
-   re-establish contrast against the background — so we can collapse the old
-   3-layer shadow (colored blur + dark 2px inner + 1px drop) into a single
-   colored blur. 3× fewer text-shadow passes per glyph; visually the halo is
-   slightly softer but the role still reads instantly during raids. */
+   text-shadow combines --glow-text (8-point black outline) with the role's
+   colored glow so the outline is never stripped when the shadow is overridden.
+   -webkit-text-stroke + paint-order are declared explicitly here rather than
+   relying on inheritance, to ensure the hairline stroke survives any future
+   cascade changes. */
 #chat .item.chat.role-mod .user {
     color: var(--role-mod) !important;
     font-weight: 800 !important;
     letter-spacing: -0.01em;
-    text-shadow: 0 0 6px rgba(0,173,3,0.75);
+    text-shadow: var(--glow-text), 0 0 6px rgba(0,173,3,0.75);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
+    paint-order: stroke fill;
 }
 #chat .item.chat.role-lead-mod .user {
     color: var(--role-mod) !important;
     font-weight: 900 !important;
     letter-spacing: -0.01em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow: 0 0 8px rgba(0,173,3,0.9);
+    text-shadow: var(--glow-text), 0 0 8px rgba(0,173,3,0.9);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
+    paint-order: stroke fill;
 }
 #chat .item.chat.streamer .user {
     color: var(--role-streamer) !important;
     font-weight: 900 !important;
     letter-spacing: -0.02em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow: 0 0 8px rgba(233,25,22,0.9);
+    text-shadow: var(--glow-text), 0 0 8px rgba(233,25,22,0.9);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
+    paint-order: stroke fill;
 }
 
 
