@@ -205,7 +205,10 @@ async function tiktokChatMessage(data) {
     reply.remove();
     pronoun.remove();
 
-    if (showAvatar) avatar.innerHTML = `<img src="${avatarImage}">`; else avatar.remove();
+    if (showAvatar) {
+        avatar.dataset.initial = (data.nickname || data.uniqueId || '?')[0].toUpperCase();
+        avatar.innerHTML = `<img src="${avatarImage}" onerror="this.style.display='none'">`;
+    } else avatar.remove();
     
     if (showBadges) {
         if (!badgesHTML) { badges.remove(); }

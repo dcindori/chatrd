@@ -210,7 +210,10 @@ async function twitchChatMessage(data) {
         message.style.color = data.message.color;
     }
 
-    if (showAvatar) avatar.innerHTML = `<img src="${avatarImage}">`; else avatar.remove();
+    if (showAvatar) {
+        avatar.dataset.initial = (data.message.displayName || '?')[0].toUpperCase();
+        avatar.innerHTML = `<img src="${avatarImage}" onerror="this.style.display='none'">`;
+    } else avatar.remove();
     if (showBadges) badges.innerHTML = badgeList; else badges.remove();
 
     if (data.user.role == 4) { classes.push('streamer'); }

@@ -80,6 +80,7 @@ if (chatHorizontal == true) {
     chatContainer.classList.remove('oneline');
     chatContainer.classList.add('horizontal');
 }
+if (showAvatar == true) { chatContainer.classList.add('show-avatar'); }
 
 let backgroundColor = hexToRGBA(chatBackground,chatBackgroundOpacity);
 chatContainer.parentElement.style.backgroundColor = backgroundColor;

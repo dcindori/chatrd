@@ -229,6 +229,93 @@ body {
 #chat .item.chat .avatar,
 #chat .item.chat .avatar:empty { display: none !important; }
 
+/* =========================================================
+   STACKED AVATAR — showAvatar=true
+   Left-to-right stack: platform icon (left, z-1) + user avatar (right, z-2).
+   Horizontal separation controlled by --avatar-stack-sep (default 10px).
+   Gated on .show-avatar so showAvatar=false keeps today's layout.
+   ========================================================= */
+
+#chat.show-avatar { --avatar-stack-sep: 16px; }
+
+/* Un-hide avatar for chat rows when stack is active */
+#chat.show-avatar .item.chat .avatar,
+#chat.show-avatar .item.chat .avatar:empty { display: flex !important; }
+
+/* Widen tile column to fit the full stack cluster — applies to all row types */
+#chat.show-avatar:not(.horizontal):not(.oneline) .item .message {
+    grid-template-columns: var(--chatrd-user-col) calc(var(--avatar-stack-sep) + 18px) 1fr !important;
+}
+/* first-chatter and mention rows each declare their own grid-template-columns with !important,
+   so they need explicit show-avatar overrides to honour the dynamic stack sep width. */
+#chat.show-avatar:not(.horizontal):not(.oneline) .item.chat.first-chatter .message {
+    grid-template-columns: var(--chatrd-user-col) calc(var(--avatar-stack-sep) + 18px) max-content !important;
+}
+#chat.show-avatar:not(.horizontal):not(.oneline) .item.chat.streamer-mentioned .message {
+    grid-template-columns: var(--chatrd-user-col) calc(var(--avatar-stack-sep) + 18px) max-content !important;
+}
+
+/* User avatar — right circle, z-2 */
+#chat.show-avatar:not(.horizontal):not(.oneline) .item.chat .info .avatar {
+    position: absolute !important;
+    left: 100%;
+    margin-left: calc(var(--chatrd-gap) + var(--avatar-stack-sep));
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 2;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: none;
+    box-shadow: 0 0 0 2px rgba(10,10,14,0.9);
+}
+
+/* Platform-colored background for initial fallback */
+#chat.show-avatar .item.twitch  .info .avatar { background: var(--p-twitch); }
+#chat.show-avatar .item.youtube .info .avatar { background: var(--p-youtube); }
+#chat.show-avatar .item.tiktok  .info .avatar { background: var(--p-tiktok); }
+#chat.show-avatar .item.kick    .info .avatar { background: var(--p-kick); color: #000; }
+
+/* Initial letter rendered via ::after — visible when img fails or is absent */
+#chat.show-avatar:not(.horizontal):not(.oneline) .item.chat .info .avatar::after {
+    content: attr(data-initial);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: none;
+    pointer-events: none;
+}
+
+/* Avatar img fills the circle — covers ::after when loaded */
+#chat.show-avatar .item.chat .info .avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+/* Platform icon — left circle, z-1, same size as user avatar */
+#chat.show-avatar:not(.horizontal):not(.oneline) .item .info .platform {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin-left: var(--chatrd-gap) !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    z-index: 1;
+    box-shadow: 0 0 0 2px rgba(10,10,14,0.9) !important;
+}
+
 
 /* =========================================================
    INFO COLUMN — col 1 (username + meta, right-aligned)
@@ -236,6 +323,7 @@ body {
    ========================================================= */
 
 #chat:not(.horizontal):not(.oneline) .item.chat .info .avatar { display: none !important; }
+/* Avatar display none is overridden above by .show-avatar selector (higher specificity) */
 
 #chat:not(.horizontal):not(.oneline) .item .info {
     grid-column: 1;

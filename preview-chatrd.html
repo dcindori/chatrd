@@ -111,6 +111,7 @@
     <div class="ctrl">
         <label>Opacity <input type="range" id="sl-o" min="0" max="100" value="50"><span class="val" id="vo">0.50</span></label>
         <label>User Col <input type="range" id="sl-w" min="60" max="220" value="120"><span class="val" id="vw">120px</span></label>
+        <label>Stack Sep <input type="range" id="sl-sep" min="0" max="28" value="16"><span class="val" id="vsep">16px</span></label>
 
         <div class="divider"></div>
         <div class="section-title">Scene</div>
@@ -204,6 +205,7 @@
 
 <script>
 const chat = document.getElementById('chat'), R = document.documentElement.style;
+chat.classList.add('show-avatar');
 const chatToasts = document.getElementById('chat-toasts');
 const TOAST_STACK_MAX = 3, TOAST_LIFETIME_MS = 5000;
 
@@ -216,6 +218,10 @@ document.getElementById('sl-o').addEventListener('input', e => {
 document.getElementById('sl-w').addEventListener('input', e => {
     R.setProperty('--chatrd-user-col', e.target.value + 'px');
     document.getElementById('vw').textContent = e.target.value + 'px';
+});
+document.getElementById('sl-sep').addEventListener('input', e => {
+    chat.style.setProperty('--avatar-stack-sep', e.target.value + 'px');
+    document.getElementById('vsep').textContent = e.target.value + 'px';
 });
 
 function setScene(s) {
@@ -363,8 +369,12 @@ function dismissToast(toast, fast) {
 
 // ---------- Builders ----------
 function buildChatRow(opts) {
-    const { id, user, platform, msg, classes = [], badges = '', timestamp = '' } = opts;
+    const { id, user, platform, msg, classes = [], badges = '', timestamp = '', avatar = '' } = opts;
     const cls = ['item', 'chat', platform, ...classes].join(' ');
+    const initial = (user || '?')[0].toUpperCase();
+    const avatarHtml = avatar
+        ? `<img src="${avatar}" onerror="this.style.display='none'">`
+        : '';
     return `
         <div id="${id}" data-user="${user}" class="${cls}">
             <div class="message">
@@ -373,7 +383,7 @@ function buildChatRow(opts) {
                     <span class="platform"><span class="hidden-platform ${platform}"></span></span>
                     <span class="badges">${badges}</span>
                     <span class="role-icon"></span>
-                    <span class="avatar"></span>
+                    <span class="avatar" data-initial="${initial}">${avatarHtml}</span>
                     <span class="pronouns"></span>
                     <span class="user">${user}</span>
                 </div>
@@ -489,7 +499,7 @@ function addFirstChatter() {
                     <span class="timestamp"></span>
                     <span class="platform"><span class="hidden-platform ${p}"></span></span>
                     <span class="badges"></span>
-                    <span class="avatar"></span>
+                    <span class="avatar" data-initial="${u[0].toUpperCase()}"></span>
                     <span class="pronouns"></span>
                     <span class="user">${u}</span>
                 </div>

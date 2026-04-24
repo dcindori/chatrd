@@ -155,7 +155,10 @@ async function youTubeChatMessage(data) {
     message.textContent = data.message;
     await getYouTubeEmotes(data, message);
 
-    if (showAvatar) avatar.innerHTML = `<img src="${data.user.profileImageUrl}">`; else avatar.remove();
+    if (showAvatar) {
+        avatar.dataset.initial = (data.user.name || '?')[0].toUpperCase();
+        avatar.innerHTML = `<img src="${data.user.profileImageUrl}" onerror="this.style.display='none'">`;
+    } else avatar.remove();
     if (showBadges) badges.innerHTML = badgeList; else badges.remove();
 
     if (data.user.isOwner) { classes.push('streamer'); }

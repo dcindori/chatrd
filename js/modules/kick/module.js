@@ -323,7 +323,10 @@ async function kickChatMessage(data) {
     user.textContent = data.sender.username;
     message.innerHTML = messageHTML;
 
-    if (showAvatar) avatar.innerHTML = `<img src="${avatarImage}">`; else avatar.remove();
+    if (showAvatar) {
+        avatar.dataset.initial = (data.sender.username || '?')[0].toUpperCase();
+        avatar.innerHTML = `<img src="${avatarImage}" onerror="this.style.display='none'">`;
+    } else avatar.remove();
     if (showBadges) {
         if (!badgesHTML) { badges.remove(); }
         else { badges.innerHTML = badgesHTML; }
