@@ -276,7 +276,7 @@ body {
     font-weight: 800;
     color: #fff;
     text-shadow: none;
-    box-shadow: 0 0 0 2px rgba(10,10,14,0.9);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.45);
 }
 
 /* Platform-colored background for initial fallback */
@@ -314,7 +314,7 @@ body {
     height: 18px !important;
     border-radius: 50% !important;
     z-index: 1;
-    box-shadow: 0 0 0 2px rgba(10,10,14,0.9) !important;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.45) !important;
 }
 
 
