@@ -75,16 +75,20 @@
            — a hairline anti-alias stroke that SURVIVES role-specific
            text-shadow overrides (mod glow, streamer glow, etc.), so usernames
            stay readable even when their glow gets repainted.
-       The outline is four offsets (not eight) because diagonals already plug
-       the 90° gaps when combined with the soft shadow — half the shadow
-       passes, same legibility. */
+       The outline uses 8 offsets (4 diagonals + 4 cardinals) for a fully
+       connected outline at any scale or OBS zoom level. */
     --glow-text:
         -1px -1px 0 rgba(0,0,0,0.92),
          1px -1px 0 rgba(0,0,0,0.92),
         -1px  1px 0 rgba(0,0,0,0.92),
          1px  1px 0 rgba(0,0,0,0.92),
+         0   -1px 0 rgba(0,0,0,0.92),
+         0    1px 0 rgba(0,0,0,0.92),
+        -1px  0   0 rgba(0,0,0,0.92),
+         1px  0   0 rgba(0,0,0,0.92),
          0 2px 4px rgba(0,0,0,0.85);
     --glow-stroke: -0.3px -0.3px 0 rgba(0,0,0,0.55), 0.3px -0.3px 0 rgba(0,0,0,0.55), -0.3px 0.3px 0 rgba(0,0,0,0.55), 0.3px 0.3px 0 rgba(0,0,0,0.55);
+    --chatrd-text-stroke: 0.4px rgba(0,0,0,0.65);
     --ring:        0 0 0 1px rgba(255,255,255,0.08);
     --shadow-sm:   0 1px 2px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04) inset;
     --shadow-md:   0 4px 14px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06) inset;
@@ -160,7 +164,7 @@ body {
     text-shadow: var(--glow-text) !important;
     /* Hairline stroke that sits UNDER the fill (paint-order) and survives any
        per-role text-shadow override. Subpixel width keeps small text sharp. */
-    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
     /* Skip paint/layout work for rows that scroll out of the viewport.
        `contain-intrinsic-size` reserves placeholder space so the scroller
@@ -778,7 +782,7 @@ body {
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
     text-shadow: var(--glow-text) !important;
-    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
     /* Cyan instead of blue — the old `#3b82f6` was too close to our link blue
        (`#93c5fd`), so an announcement row with a link became a wash of
@@ -985,7 +989,7 @@ body {
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
     text-shadow: var(--glow-text) !important;
-    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
     --evt-accent: var(--p-twitch);
 }
@@ -1570,7 +1574,7 @@ body {
     pointer-events: none;
     color: var(--fg-primary, #fff);
     text-shadow: var(--glow-text, -1px -1px 0 rgba(0,0,0,.92), 1px -1px 0 rgba(0,0,0,.92), -1px 1px 0 rgba(0,0,0,.92), 1px 1px 0 rgba(0,0,0,.92), 0 2px 4px rgba(0,0,0,.85));
-    -webkit-text-stroke: 0.5px rgba(0,0,0,0.85);
+    -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
 }
 #live-bar[hidden] { display: none !important; }
