@@ -421,10 +421,6 @@ body {
 }
 
 #chat .user { color: var(--fg-primary); }
-#chat .item.twitch  .user { color: var(--p-twitch)  !important; }
-#chat .item.youtube .user { color: var(--p-youtube) !important; }
-#chat .item.tiktok  .user { color: var(--p-tiktok)  !important; }
-#chat .item.kick    .user { color: var(--p-kick)    !important; }
 
 /* Role weight + color override.
    Cascade order is low → high priority: sub < founder < artist < vip
