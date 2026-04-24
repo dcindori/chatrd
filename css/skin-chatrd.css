@@ -44,6 +44,7 @@
     --role-turbo:       #59399a;  /* Turbo — deep purple */
     --role-hype:        #ff5a1f;  /* Hype Train — orange */
     --role-bits-leader: #ffbf00;  /* Bits leader — gold */
+    --role-editor:      #e8a838;  /* Editor — amber-gold */
 
     /* ---------- TYPOGRAPHY ---------- */
     --chatrd-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -517,15 +518,16 @@ body {
 #chat .item.chat.role-global-mod  .info .role-icon,
 #chat .item.chat.role-admin       .info .role-icon,
 #chat .item.chat.role-staff       .info .role-icon,
+#chat .item.chat.role-editor      .info .role-icon,
 #chat .item.chat.role-mod         .info .role-icon,
 #chat .item.chat.role-lead-mod    .info .role-icon,
 #chat .item.chat.streamer         .info .role-icon { display: inline-block; }
 
 #chat .item.chat.role-sub         .info .role-icon::before { content: '\f005'; color: var(--role-sub); }          /* star */
-#chat .item.chat.role-founder     .info .role-icon::before { content: '\f164'; color: var(--role-founder); }      /* thumbs-up */
-#chat .item.chat.role-artist      .info .role-icon::before { content: '\f001'; color: var(--role-artist); }       /* music */
+#chat .item.chat.role-founder     .info .role-icon::before { content: '\f525'; color: var(--role-founder); }      /* dice-one */
+#chat .item.chat.role-artist      .info .role-icon::before { content: '\f1fc'; color: var(--role-artist); }       /* paintbrush */
 #chat .item.chat.role-vip         .info .role-icon::before { content: '\f3a5'; color: var(--role-vip); }          /* gem */
-#chat .item.chat.role-turbo       .info .role-icon::before { content: '\f0e7'; color: var(--role-turbo); }        /* bolt */
+#chat .item.chat.role-turbo       .info .role-icon::before { content: '\f5e7'; color: var(--role-turbo); }        /* charging-station */
 #chat .item.chat.role-prime       .info .role-icon::before { content: '\f521'; color: var(--role-prime); }        /* crown */
 #chat .item.chat.role-hype        .info .role-icon::before { content: '\f238'; color: var(--role-hype); }         /* train */
 #chat .item.chat.role-bits-leader .info .role-icon::before { content: '\f3a5'; color: var(--role-bits-leader); }  /* gem */
@@ -535,17 +537,19 @@ body {
 #chat .item.chat.role-admin       .info .role-icon::before { content: '\f132'; color: var(--role-admin); }        /* shield */
 #chat .item.chat.role-staff       .info .role-icon::before { content: '\f0ad'; color: var(--role-staff); }        /* wrench */
 
-/* POP: Moderator — gavel + green glow (FA Free compatible) */
+#chat .item.chat.role-editor      .info .role-icon::before { content: '\e131'; color: var(--role-editor); }        /* clapperboard */
+
+/* POP: Moderator — shield-halved + green glow */
 #chat .item.chat.role-mod .info .role-icon::before {
-    content: '\f0e3';  /* gavel */
+    content: '\f3ed';  /* shield-halved */
     color: var(--role-mod);
     font-size: 11px;
     filter: drop-shadow(0 0 5px var(--role-mod)) drop-shadow(0 0 1px rgba(0,0,0,0.8));
 }
 
-/* POP: Lead Moderator — shield-halved with strong glow, one tier above mod */
+/* POP: Lead Moderator — gavel with strong glow, one tier above mod */
 #chat .item.chat.role-lead-mod .info .role-icon::before {
-    content: '\f3ed';  /* shield-halved */
+    content: '\f0e3';  /* gavel */
     color: var(--role-mod);
     font-size: 12px;
     filter: drop-shadow(0 0 7px var(--role-mod)) drop-shadow(0 0 2px rgba(0,0,0,0.9));
@@ -557,7 +561,7 @@ body {
    always-animating icon on a permanent on-screen presence (the streamer
    posts constantly) flattens hierarchy when events/first-chatters also pulse. */
 #chat .item.chat.streamer .info .role-icon::before {
-    content: '\f030';  /* camera */
+    content: '\f03d';  /* video */
     color: var(--role-streamer);
     font-size: 11px;
     text-shadow: none;

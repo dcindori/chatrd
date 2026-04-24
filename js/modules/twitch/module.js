@@ -226,6 +226,7 @@ async function twitchChatMessage(data) {
     if (hasBadge('founder'))         classes.push('role-founder');
     // Role badges
     if (hasBadge('vip'))             classes.push('role-vip');
+    if (hasBadge('editor'))          classes.push('role-editor');
     if (hasBadge('moderator'))       classes.push('role-mod');
     if (hasBadge('lead_moderator', 'lead-moderator', 'leadmod'))
                                      classes.push('role-lead-mod');
