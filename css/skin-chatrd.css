@@ -1993,7 +1993,7 @@ body {
     padding: 3px 8px;
     border-radius: var(--chatrd-radius-sm);
     font-size: 10px;
-    box-shadow: 0 0 14px rgba(255, 43, 43, 0.55);
+    filter: drop-shadow(0 0 7px rgba(255, 43, 43, 0.55));
     text-shadow: none;
     -webkit-text-stroke: 0;
 }
@@ -2003,7 +2003,7 @@ body {
     height: 6px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 0 6px #fff;
+    will-change: transform, opacity;
     animation: chatrd-livepulse 1.6s ease-in-out infinite;
 }
 @keyframes chatrd-livepulse {

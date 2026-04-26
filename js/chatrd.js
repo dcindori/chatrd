@@ -1285,7 +1285,6 @@ async function multiStreamChat(element) {
         const pct = Math.min(1, mpm / MAX_MPM);
 
         if (mpm < MIN_VISIBLE_MPM) {
-            bar.hidden = false;         /* keep in layout so live-bar doesn't jump */
             fill.style.opacity = '0';
             fill.style.transform = 'scaleX(0)';
         } else {
