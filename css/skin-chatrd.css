@@ -70,22 +70,25 @@
        The overlay sits on live gameplay, so a tight shadow isn't enough — we
        need a hard 1px black outline that survives against bright highlights
        (snow, muzzle flashes, UI) plus a soft drop-shadow for depth. We pair:
-         • `--glow-text`  — 4-corner 1px outline + soft drop shadow. Set on
-           every text-bearing element.
+         • `--glow-text`  — 2-corner 1px outline + soft drop shadow. Set on
+           every text-bearing element. Two opposite diagonal corners are
+           sufficient because `-webkit-text-stroke` already provides the
+           connected hairline outline; the shadows add visual weight only.
+           Previously 4 corners (5 layers total); reduced to 3 layers to cut
+           rasterization cost on every visible text element.
          • `paint-order: stroke fill` + `-webkit-text-stroke` at the row level
            — a hairline anti-alias stroke that SURVIVES role-specific
            text-shadow overrides (mod glow, streamer glow, etc.), so usernames
-           stay readable even when their glow gets repainted.
-       The outline uses 8 offsets (4 diagonals + 4 cardinals) for a fully
-       connected outline at any scale or OBS zoom level. */
+           stay readable even when their glow gets repainted. */
     --glow-text:
-        -1px -1px 0 rgba(0, 0, 0, 0.92), 1px -1px 0 rgba(0, 0, 0, 0.92), -1px 1px 0 rgba(0, 0, 0, 0.92), 1px 1px 0 rgba(0, 0, 0, 0.92),
-        0 2px 4px rgba(0, 0, 0, 0.85);
-    --glow-stroke: -0.3px -0.3px 0 rgba(0, 0, 0, 0.55), 0.3px -0.3px 0 rgba(0, 0, 0, 0.55), -0.3px 0.3px 0 rgba(0, 0, 0, 0.55), 0.3px 0.3px 0 rgba(0, 0, 0, 0.55);
+        -1px -1px 0 rgba(0, 0, 0, 0.92), 1px 1px 0 rgba(0, 0, 0, 0.92);
+    --glow-stroke: -0.3px -0.3px 0 rgba(0, 0, 0, 0.55), 0.3px 0.3px 0 rgba(0, 0, 0, 0.55);
     --chatrd-text-stroke: 0.4px rgba(0, 0, 0, 0.65);
     --ring: 0 0 0 1px rgba(255, 255, 255, 0.08);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    /* Inset rings at 4–6% opacity were visually imperceptible — removed to
+       reduce box-shadow layer count on every platform tile. */
+    --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 0 rgba(0, 0, 0, 0.28);
 
     /* ---------- MOTION ---------- */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -180,6 +183,10 @@ body {
        text-shadow/stroke work on every off-screen row. */
     content-visibility: auto;
     contain-intrinsic-size: 0 28px;
+    /* Isolate per-row style recalculations — a counter/custom-property change
+       in one row does not invalidate siblings. `layout` is intentionally
+       omitted to preserve normal block-flow sizing. */
+    contain: style;
 }
 
 #chat:not(.horizontal):not(.oneline) .item {
@@ -192,7 +199,7 @@ body {
     outline: none !important;
     padding: 2px 4px !important;
     border-radius: var(--chatrd-radius-sm) !important;
-    transition: background 180ms var(--ease-out);
+    /* No transition — pointer-events: none on #chat means hover never fires. */
 }
 
 #chat:not(.horizontal):not(.oneline) .item .message {
@@ -431,7 +438,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    text-shadow: none;
     filter: none !important;
 }
 #chat .item.twitch .info .platform .hidden-platform::after {
@@ -549,9 +556,7 @@ body {
     color: var(--role-mod) !important;
     font-weight: 800 !important;
     letter-spacing: -0.01em;
-    text-shadow:
-        var(--glow-text),
-        0 0 6px rgba(0, 173, 3, 0.75);
+    text-shadow: var(--glow-text);
     -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
 }
@@ -560,9 +565,7 @@ body {
     font-weight: 900 !important;
     letter-spacing: -0.01em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow:
-        var(--glow-text),
-        0 0 8px rgba(0, 173, 3, 0.9);
+    text-shadow: var(--glow-text);
     -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
 }
@@ -571,9 +574,7 @@ body {
     font-weight: 900 !important;
     letter-spacing: -0.02em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow:
-        var(--glow-text),
-        0 0 8px rgba(233, 25, 22, 0.9);
+    text-shadow: var(--glow-text);
     -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
 }
@@ -682,23 +683,21 @@ body {
     color: var(--role-editor);
 } /* clapperboard */
 
-/* POP: Moderator — shield-halved + green glow */
+/* POP: Moderator — shield-halved */
 #chat .item.chat.role-mod .info .role-icon::before {
     content: "\f3ed"; /* shield-halved */
     color: var(--role-mod);
     font-size: 11px;
-    filter: drop-shadow(0 0 5px var(--role-mod));
 }
 
-/* POP: Lead Moderator — gavel with strong glow, one tier above mod */
+/* POP: Lead Moderator — gavel, one tier above mod */
 #chat .item.chat.role-lead-mod .info .role-icon::before {
     content: "\f0e3"; /* gavel */
     color: var(--role-mod);
     font-size: 12px;
-    filter: drop-shadow(0 0 7px var(--role-mod));
 }
 
-/* POP: Broadcaster — pulsing red dot + red camera.
+/* POP: Broadcaster — pulsing red camera.
    Animation is finite (3 pulses) rather than infinite so the broadcaster's
    camera icon draws attention on insertion but settles afterwards. An
    always-animating icon on a permanent on-screen presence (the streamer
@@ -708,7 +707,6 @@ body {
     color: var(--role-streamer);
     font-size: 11px;
     text-shadow: none;
-    filter: drop-shadow(0 0 6px var(--role-streamer));
     animation: chatrd-pulse 2.2s ease-in-out 3 both;
 }
 
@@ -864,7 +862,6 @@ body {
     border-radius: var(--chatrd-radius-md) !important;
     outline: 1px dashed rgba(251, 191, 36, 0.8) !important;
     outline-offset: -1px;
-    box-shadow: 0 0 14px rgba(251, 191, 36, 0.2) !important;
     position: relative;
 }
 /* Leading icon — "user-plus" reads as "new person joining", clearer than a sparkle. */
@@ -877,7 +874,7 @@ body {
     margin-right: 6px;
     display: inline-block;
     vertical-align: baseline;
-    text-shadow: 0 0 6px rgba(251, 191, 36, 0.75);
+    text-shadow: none;
     animation: chatrd-sparkle 2.4s ease-in-out 3 both;
 }
 @keyframes chatrd-sparkle {
@@ -1524,7 +1521,7 @@ body {
     color: rgba(255, 255, 255, 0.96) !important;
     background: color-mix(in srgb, var(--evt-accent) 22%, rgba(0, 0, 0, 0.35)) !important;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    text-shadow: none;
     flex-shrink: 0;
     font-family: var(--chatrd-mono);
     animation: none !important;
@@ -1678,17 +1675,18 @@ body {
 #chat-toasts .event.bits.bigger-than-100000 .info .avatar {
     animation: chatrd-chip-pulse 1.1s ease-in-out 12 both !important;
 }
+/* box-shadow animation is not GPU-compositable (forces repaint every frame).
+   Replaced with opacity + scale which run entirely on the compositor. The
+   scale pulse gives the same visual urgency as the old expanding ring. */
 @keyframes chatrd-chip-pulse {
     0%,
     100% {
-        box-shadow:
-            inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent),
-            0 0 0 0 color-mix(in srgb, var(--evt-accent) 45%, transparent);
+        opacity: 0.75;
+        transform: translateY(-50%) scale(1);
     }
     50% {
-        box-shadow:
-            inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 85%, transparent),
-            0 0 0 4px color-mix(in srgb, var(--evt-accent) 0%, transparent);
+        opacity: 1;
+        transform: translateY(-50%) scale(1.18);
     }
 }
 
@@ -1722,7 +1720,6 @@ body {
 #chat-toasts .event.tiktok.gift .value span.gift-image img {
     height: 18px !important;
     width: auto !important;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)) !important;
     animation: none !important;
 }
 #chat .event.tiktok.gift .value span.gift-value,
@@ -1738,7 +1735,7 @@ body {
     color: rgba(255, 255, 255, 0.96) !important;
     background: rgba(251, 191, 36, 0.28) !important;
     box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.6) !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    text-shadow: none;
     font-family: var(--chatrd-mono) !important;
     font-variant-numeric: tabular-nums;
 }
@@ -1789,8 +1786,7 @@ body {
    elevated-card treatment (surface-2 + shadow + inset accent ring + centered
    content column) can only drift in one place.
    `backdrop-filter` was removed earlier — OBS browser source has no
-   backdrop pixels to blur, so it was pure GPU overhead. The heavier shadow
-   + inset hairline reconstitute card depth without the cost. */
+   backdrop pixels to blur, so it was pure GPU overhead. */
 #chat-toasts .event .message,
 #chat-toasts .item.announcement .message {
     min-height: 40px !important;
@@ -1798,7 +1794,7 @@ body {
     background: var(--surface-2) !important;
     border-radius: var(--chatrd-radius-md) !important;
     box-shadow:
-        0 6px 22px rgba(0, 0, 0, 0.55),
+        0 6px 0 rgba(0, 0, 0, 0.55),
         inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 30%, rgba(255, 255, 255, 0.1)) !important;
     display: flex !important;
     flex-direction: column !important;
@@ -1816,26 +1812,23 @@ body {
     left: 12px !important;
     border-radius: var(--chatrd-radius-md) !important;
     background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0, 0, 0, 0.4)) !important;
-    box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent),
-        0 2px 6px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent) !important;
 }
 #chat-toasts .event .info .avatar:empty::before,
 #chat-toasts .item.announcement .info .avatar:empty::before {
     font-size: 14px;
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+    text-shadow: none !important;
 }
 #chat-toasts .event .info .avatar img {
     width: 28px !important;
     height: 28px !important;
 }
 
-/* Toast rail — brighter + glowing, shared. */
+/* Toast rail — brighter, shared. */
 #chat-toasts .event .message::before,
 #chat-toasts .item.announcement .message::before {
     opacity: 1;
-    box-shadow: 0 0 8px color-mix(in srgb, var(--evt-accent) 60%, transparent);
 }
 
 /* Toast user weight — shared. */
@@ -1966,10 +1959,7 @@ body {
     text-shadow: var(
         --glow-text,
         -1px -1px 0 rgba(0, 0, 0, 0.92),
-        1px -1px 0 rgba(0, 0, 0, 0.92),
-        -1px 1px 0 rgba(0, 0, 0, 0.92),
-        1px 1px 0 rgba(0, 0, 0, 0.92),
-        0 2px 4px rgba(0, 0, 0, 0.85)
+        1px 1px 0 rgba(0, 0, 0, 0.92)
     );
     -webkit-text-stroke: var(--chatrd-text-stroke);
     paint-order: stroke fill;
@@ -1989,7 +1979,6 @@ body {
     padding: 3px 8px;
     border-radius: var(--chatrd-radius-sm);
     font-size: 10px;
-    box-shadow: 0 0 7px rgba(255, 43, 43, 0.55);
     text-shadow: none;
     -webkit-text-stroke: 0;
 }
@@ -2058,7 +2047,7 @@ body {
     padding: 2px 6px;
     border-radius: var(--chatrd-radius-sm);
     opacity: 0.92;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: none;
     -webkit-text-stroke: 0;
     font-variant-numeric: tabular-nums;
 }
