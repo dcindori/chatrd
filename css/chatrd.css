@@ -71,14 +71,14 @@ body {
     font-size: 18px;
     line-height: 150%;
     text-shadow: 2px 2px 5px rgba(0,0,0,0.75);
-    transition: all ease-in-out 300ms;
+    transition: opacity 220ms ease-out;
     /*margin: 5px 0;*/
 }
 
 #chat .item .message {
     border-radius: 5px;
     padding: 5px;
-    transition: all ease-in-out 300ms;
+    transition: background 180ms ease-out;
 }
 
 #chat:not(.oneline):not(.horizontal) .item.chat.grouped .message {
@@ -219,7 +219,7 @@ body {
     font-size: 18px;
     line-height: 100%;
     text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-    transition: all ease-in-out 300ms;
+    transition: opacity 220ms ease-out;
     margin: 5px 10px;
 }
 
@@ -553,7 +553,7 @@ body {
     outline: none;
     font-size: 16px;
     width: 100%;
-    transition: all ease-in-out 300ms;
+    transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
 }
 
 #chat-input button {
@@ -572,7 +572,7 @@ body {
 #chat-input button.active,
 #chat-input button:hover {
     color: #ffcc00;
-    transition: all ease-in-out 300ms;
+    transition: color 180ms ease-out;
 }
 
 #chat-input #chat-input-send {
@@ -599,7 +599,7 @@ body {
 
 #chat-input .settings.active {
     display: inline-block;
-    transition: all ease-in-out 300ms;
+    transition: opacity 180ms ease-out;
 }
 
 #chat-input .settings::after {
@@ -779,7 +779,7 @@ body {
     position: absolute;
     top: 10px;
     right: 10px;
-    transition: all ease-in-out 300ms;
+    transition: opacity 220ms ease-out;
 }
 
 .item.chat:hover .message {
@@ -856,8 +856,8 @@ body {
     border-radius: 5px;
     font-size: 14px;
     padding: 5px;
-    transition: all ease-in-out 300ms;
-    margin: 0 2px;    
+    transition: background 180ms ease-out, color 180ms ease-out;
+    margin: 0 2px;
     cursor: pointer;
 }
 
@@ -963,7 +963,6 @@ body {
     height: 6px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 0 6px #fff;
     animation: chatrd-livepulse 1.6s ease-in-out infinite;
 }
 @keyframes chatrd-livepulse {
