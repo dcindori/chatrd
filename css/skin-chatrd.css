@@ -116,8 +116,6 @@ body {
     padding: 6px 6px 10px !important;
     gap: 0 !important;
     scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 12%);
     /* OBS overlay — no cursor, no hit-testing. Disabling pointer-events on
        the whole chat container skips per-frame hover/active-state tracking
        for every message, emote, link, and pseudo inside it. Moderation
@@ -170,11 +168,6 @@ body {
     font-size: var(--chatrd-size-chat) !important;
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
-    text-shadow: var(--glow-text) !important;
-    /* Hairline stroke that sits UNDER the fill (paint-order) and survives any
-       per-role text-shadow override. Subpixel width keeps small text sharp. */
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
     /* Skip paint/layout work for rows that scroll out of the viewport.
        `contain-intrinsic-size` reserves placeholder space so the scroller
        doesn't jump when rows get re-rendered. 28px matches our min-height;
@@ -298,7 +291,6 @@ body {
     font-weight: 800;
     color: #fff;
     text-shadow: none;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
 }
 
 /* Platform-colored background for initial fallback */
@@ -345,7 +337,6 @@ body {
     height: 18px !important;
     border-radius: 50% !important;
     z-index: 1;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* =========================================================
@@ -400,7 +391,6 @@ body {
     justify-content: center;
     border-radius: 4px;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 }
 
@@ -556,27 +546,18 @@ body {
     color: var(--role-mod) !important;
     font-weight: 800 !important;
     letter-spacing: -0.01em;
-    text-shadow: var(--glow-text);
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
 }
 #chat .item.chat.role-lead-mod .user {
     color: var(--role-mod) !important;
     font-weight: 900 !important;
     letter-spacing: -0.01em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow: var(--glow-text);
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
 }
 #chat .item.chat.streamer .user {
     color: var(--role-streamer) !important;
     font-weight: 900 !important;
     letter-spacing: -0.02em;
     font-size: calc(var(--chatrd-size-user) + 1px);
-    text-shadow: var(--glow-text);
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
 }
 
 /* =========================================================
@@ -982,7 +963,6 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    box-shadow: var(--ring);
 }
 
 /* =========================================================
@@ -1041,9 +1021,6 @@ body {
     font-size: var(--chatrd-size-chat) !important;
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
-    text-shadow: var(--glow-text) !important;
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
     /* Cyan instead of blue — the old `#3b82f6` was too close to our link blue
        (`#93c5fd`), so an announcement row with a link became a wash of
        same-hue text. Cyan separates the two signals cleanly. */
@@ -1165,7 +1142,6 @@ body {
     min-width: 20px !important;
     border-radius: var(--chatrd-radius-sm) !important;
     background: color-mix(in srgb, var(--evt-accent) 22%, transparent) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
     border: none !important;
     overflow: hidden !important;
     flex-shrink: 0;
@@ -1265,9 +1241,6 @@ body {
     font-size: var(--chatrd-size-chat) !important;
     line-height: var(--chatrd-line) !important;
     color: var(--fg-primary) !important;
-    text-shadow: var(--glow-text) !important;
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
     --evt-accent: var(--p-twitch);
 }
 /* Neutralize per-platform module.css `.info { margin: -5px 0; }` hacks that
@@ -1386,7 +1359,6 @@ body {
     min-width: 20px !important;
     border-radius: var(--chatrd-radius-sm) !important;
     background: color-mix(in srgb, var(--evt-accent) 22%, transparent) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
     border: none !important;
     overflow: hidden !important;
     flex-shrink: 0;
@@ -1520,7 +1492,6 @@ body {
     white-space: nowrap;
     color: rgba(255, 255, 255, 0.96) !important;
     background: color-mix(in srgb, var(--evt-accent) 22%, rgba(0, 0, 0, 0.35)) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 55%, transparent) !important;
     text-shadow: none;
     flex-shrink: 0;
     font-family: var(--chatrd-mono);
@@ -1734,7 +1705,6 @@ body {
     line-height: 1.4 !important;
     color: rgba(255, 255, 255, 0.96) !important;
     background: rgba(251, 191, 36, 0.28) !important;
-    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.6) !important;
     text-shadow: none;
     font-family: var(--chatrd-mono) !important;
     font-variant-numeric: tabular-nums;
@@ -1793,9 +1763,6 @@ body {
     padding: 8px 12px 8px 48px !important;
     background: var(--surface-2) !important;
     border-radius: var(--chatrd-radius-md) !important;
-    box-shadow:
-        0 6px 0 rgba(0, 0, 0, 0.55),
-        inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 30%, rgba(255, 255, 255, 0.1)) !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
@@ -1812,7 +1779,6 @@ body {
     left: 12px !important;
     border-radius: var(--chatrd-radius-md) !important;
     background: color-mix(in srgb, var(--evt-accent) 28%, rgba(0, 0, 0, 0.4)) !important;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evt-accent) 65%, transparent) !important;
 }
 #chat-toasts .event .info .avatar:empty::before,
 #chat-toasts .item.announcement .info .avatar:empty::before {
@@ -1914,7 +1880,6 @@ body {
     border-radius: 4px;
     padding: 2px;
     z-index: 2;
-    box-shadow: var(--ring);
 }
 #chat .item:hover .chatmoderation {
     display: flex;
@@ -1956,13 +1921,6 @@ body {
     font-family: var(--chatrd-font) !important;
     pointer-events: none;
     color: var(--fg-primary, #fff);
-    text-shadow: var(
-        --glow-text,
-        -1px -1px 0 rgba(0, 0, 0, 0.92),
-        1px 1px 0 rgba(0, 0, 0, 0.92)
-    );
-    -webkit-text-stroke: var(--chatrd-text-stroke);
-    paint-order: stroke fill;
 }
 #live-bar[hidden] {
     display: none !important;
