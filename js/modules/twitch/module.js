@@ -203,7 +203,6 @@ async function twitchChatMessage(data) {
         }
     }
 
-    user.style.color = data.message.color;
     user.textContent = data.message.displayName;
 
     if (data.message.isMe) {
@@ -476,7 +475,6 @@ async function twitchAnnouncementMessage(data) {
 
     header.innerHTML = `<span><i class="fa-solid fa-bullhorn"></i> Announcement</span>`;
 
-    user.style.color = data.user.color;
     user.textContent = data.user.name;
 
     
